@@ -75,11 +75,23 @@
             border-radius: 0.75rem;
             padding: 0.875rem;
             transition: all 0.2s ease;
+            color: #E0E0E0;
         }
         .form-input:focus, .form-select:focus, .form-textarea:focus {
             outline: none;
             border-color: #4f46e5;
             box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.5);
+        }
+        /* Fix for browser autofill styles */
+        input:-webkit-autofill,
+        input:-webkit-autofill:hover, 
+        input:-webkit-autofill:focus, 
+        input:-webkit-autofill:active {
+            -webkit-box-shadow: 0 0 0 30px #111827 inset !important;
+            -webkit-text-fill-color: #E0E0E0 !important;
+        }
+        .form-select option {
+            background: #111827;
         }
         #summaryContent h2 { font-size: 1.5rem; font-weight: 700; color: #4f46e5; margin-bottom: 1rem; border-bottom: 1px solid rgba(255,255,255,0.2); padding-bottom: 0.5rem; }
         #summaryContent h3 { font-size: 1.125rem; font-weight: 600; color: #E0E0E0; margin-top: 1.5rem; margin-bottom: 0.75rem; }
@@ -100,7 +112,7 @@
         }
     </style>
 </head>
-<body class="flex items-center justify-center min-h-screen p-4">
+<body class="flex flex-col min-h-screen">
     <div id="background-gradient"></div>
 
     <!-- Drawer Backdrop -->
@@ -108,119 +120,124 @@
 
     <!-- Drawer -->
     <div id="drawer" class="fixed top-0 right-0 h-full w-80 bg-gray-900/80 backdrop-blur-lg shadow-2xl z-40 transform translate-x-full">
-        <div id="drawer-content" class="p-6">
+        <div id="drawer-content" class="p-6 flex flex-col h-full">
             <!-- Drawer content will be populated by JavaScript -->
         </div>
     </div>
 
-    <div id="app" class="w-full max-w-3xl mx-auto relative my-8">
-        
-        <!-- User Profile Icon -->
-        <div class="absolute top-4 right-4 z-10">
-            <button id="profile-icon-btn" class="w-12 h-12 rounded-full bg-white/10 flex items-center justify-center border border-white/20 hover:bg-white/20 transition-colors">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>
-            </button>
-        </div>
+    <header class="w-full max-w-5xl mx-auto py-4 px-4 flex justify-between items-center">
+        <h1 class="text-xl font-bold text-white">AI Interview Coach</h1>
+        <button id="profile-icon-btn" class="w-12 h-12 rounded-full bg-white/10 flex items-center justify-center border border-white/20 hover:bg-white/20 transition-colors">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>
+        </button>
+    </header>
 
-        <!-- Setup Screen -->
-        <div id="setupScreen" class="screen glass-card p-8 space-y-6">
-            <div class="text-center">
-                <h1 class="text-4xl font-extrabold text-white" data-lang-key="main_title">AI Interview Coach</h1>
-                <p class="text-gray-400 mt-2" data-lang-key="tagline">Apne dream job ke liye practice karein.</p>
-            </div>
-            <div class="space-y-4">
-                 <div>
-                    <label for="languageSelector" class="block text-sm font-medium text-gray-300 mb-2" data-lang-key="select_language">Interview Language</label>
-                    <select id="languageSelector" class="form-select w-full">
-                        <option value="en">English</option>
-                        <option value="hi">Hinglish</option>
-                    </select>
+    <main class="flex-grow flex items-center justify-center p-4">
+        <div id="app" class="w-full max-w-3xl mx-auto relative">
+            <!-- Setup Screen -->
+            <div id="setupScreen" class="screen glass-card p-8 space-y-6">
+                <div class="text-center">
+                    <h1 class="text-4xl font-extrabold text-white" data-lang-key="main_title">AI Interview Coach</h1>
+                    <p class="text-gray-400 mt-2" data-lang-key="tagline">Apne dream job ke liye practice karein.</p>
                 </div>
-                <div>
-                    <label for="jobTitle" class="block text-sm font-medium text-gray-300 mb-2" data-lang-key="job_title_label">Job Title</label>
-                    <input type="text" id="jobTitle" class="form-input w-full" placeholder="e.g., Senior Software Engineer">
-                </div>
-                <div>
-                    <div class="flex justify-between items-center mb-2">
-                        <label for="jobDescription" class="block text-sm font-medium text-gray-300" data-lang-key="job_desc_label">Job Description</label>
-                        <button id="generateDescBtn" class="text-sm text-indigo-400 hover:text-indigo-300 font-semibold" data-lang-key="generate_desc_btn">Generate Description ✨</button>
+                <div class="space-y-4">
+                     <div>
+                        <label for="languageSelector" class="block text-sm font-medium text-gray-300 mb-2" data-lang-key="select_language">Interview Language</label>
+                        <select id="languageSelector" class="form-select w-full">
+                            <option value="en">English</option>
+                            <option value="hi">Hinglish</option>
+                        </select>
                     </div>
-                    <textarea id="jobDescription" rows="6" class="form-textarea w-full" data-lang-key="job_desc_placeholder" placeholder="Yahan job description paste karein..."></textarea>
+                    <div>
+                        <label for="jobTitle" class="block text-sm font-medium text-gray-300 mb-2" data-lang-key="job_title_label">Job Title</label>
+                        <input type="text" id="jobTitle" class="form-input w-full" placeholder="e.g., Senior Software Engineer">
+                    </div>
+                    <div>
+                        <div class="flex justify-between items-center mb-2">
+                            <label for="jobDescription" class="block text-sm font-medium text-gray-300" data-lang-key="job_desc_label">Job Description</label>
+                            <button id="generateDescBtn" class="text-sm text-indigo-400 hover:text-indigo-300 font-semibold" data-lang-key="generate_desc_btn">Generate Description ✨</button>
+                        </div>
+                        <textarea id="jobDescription" rows="6" class="form-textarea w-full" data-lang-key="job_desc_placeholder" placeholder="Yahan job description paste karein..."></textarea>
+                    </div>
+                    <div>
+                        <label for="difficulty" class="block text-sm font-medium text-gray-300 mb-2" data-lang-key="difficulty_label">Difficulty Level</label>
+                        <select id="difficulty" class="form-select w-full">
+                            <option value="Easy" data-lang-key="difficulty_easy">Easy</option>
+                            <option value="Medium" selected data-lang-key="difficulty_medium">Medium</option>
+                            <option value="Hard" data-lang-key="difficulty_hard">Hard</option>
+                        </select>
+                    </div>
                 </div>
-                <div>
-                    <label for="difficulty" class="block text-sm font-medium text-gray-300 mb-2" data-lang-key="difficulty_label">Difficulty Level</label>
-                    <select id="difficulty" class="form-select w-full">
-                        <option value="Easy" data-lang-key="difficulty_easy">Easy</option>
-                        <option value="Medium" selected data-lang-key="difficulty_medium">Medium</option>
-                        <option value="Hard" data-lang-key="difficulty_hard">Hard</option>
-                    </select>
-                </div>
+                <button id="startInterviewBtn" class="w-full btn-primary" data-lang-key="start_btn">
+                    Practice Shuru Karein
+                </button>
             </div>
-            <button id="startInterviewBtn" class="w-full btn-primary" data-lang-key="start_btn">
-                Practice Shuru Karein
-            </button>
-        </div>
 
-        <!-- Interview Screen -->
-        <div id="interviewScreen" class="screen hidden glass-card p-8 space-y-6">
-             <div class="text-center mb-4">
-                <h1 id="interviewTitle" class="text-2xl font-bold text-white" data-lang-key="interview_in_progress">Interview in Progress...</h1>
+            <!-- Interview Screen -->
+            <div id="interviewScreen" class="screen hidden glass-card p-8 space-y-6">
+                 <div class="text-center mb-4">
+                    <h1 id="interviewTitle" class="text-2xl font-bold text-white" data-lang-key="interview_in_progress">Interview in Progress...</h1>
+                </div>
+                
+                <div class="flex items-start space-x-4">
+                    <div class="flex-shrink-0 w-10 h-10 rounded-full bg-indigo-500 flex items-center justify-center font-bold">AI</div>
+                    <div class="bg-black/20 p-4 rounded-xl shadow-lg border border-white/10 flex-1">
+                        <p class="text-indigo-400 text-sm font-semibold mb-2" data-lang-key="ai_question_label">AI COACH</p>
+                        <p id="aiQuestion" class="text-lg text-white font-medium min-h-[56px]">Coach interview shuru karne ke liye taiyaar ho raha hai...</p>
+                    </div>
+                </div>
+
+                <div id="statusIndicator" class="flex items-center justify-center space-x-3 bg-black/20 p-3 rounded-full mx-auto w-fit">
+                    <div id="statusIconContainer"></div>
+                    <span id="statusText" class="text-gray-300 font-medium" data-lang-key="status_waiting">Waiting to start...</span>
+                </div>
+
+                <div class="flex items-start space-x-4">
+                    <div class="flex-shrink-0 w-10 h-10 rounded-full bg-gray-600 flex items-center justify-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>
+                    </div>
+                    <div id="transcriptContainer" class="bg-black/20 p-4 rounded-xl border border-white/10 min-h-[80px] flex-1">
+                         <p class="text-gray-400 text-sm font-semibold mb-2" data-lang-key="your_answer_label">AAPKA JAWAB</p>
+                         <p id="userTranscript" class="text-gray-200 italic" data-lang-key="transcript_placeholder">Yahan aapka bola hua jawab dikhega...</p>
+                    </div>
+                </div>
+
+                <div id="feedbackContainer" class="hidden bg-indigo-500/10 p-4 rounded-xl border border-indigo-500/30">
+                    <p class="text-indigo-300 text-sm font-semibold mb-2" data-lang-key="feedback_label">AI Coach ka Feedback:</p>
+                    <p id="aiFeedback" class="text-indigo-200"></p>
+                </div>
+                <div class="flex space-x-4 pt-4">
+                    <button id="hintBtn" class="w-full btn-secondary text-white font-bold py-3 px-4 rounded-lg" data-lang-key="hint_btn">Hint Chahiye ✨</button>
+                    <button id="endInterviewBtn" class="w-full bg-red-600 hover:bg-red-700 text-white font-bold py-3 px-4 rounded-lg transition-colors">
+                        Interview End Karein
+                    </button>
+                </div>
             </div>
             
-            <div class="flex items-start space-x-4">
-                <div class="flex-shrink-0 w-10 h-10 rounded-full bg-indigo-500 flex items-center justify-center font-bold">AI</div>
-                <div class="bg-black/20 p-4 rounded-xl shadow-lg border border-white/10 flex-1">
-                    <p class="text-indigo-400 text-sm font-semibold mb-2" data-lang-key="ai_question_label">AI COACH</p>
-                    <p id="aiQuestion" class="text-lg text-white font-medium min-h-[56px]">Coach interview shuru karne ke liye taiyaar ho raha hai...</p>
+            <!-- Summary Screen -->
+            <div id="summaryScreen" class="screen hidden glass-card p-8 space-y-6">
+                <div class="text-center">
+                    <h1 class="text-3xl font-bold text-white" data-lang-key="summary_title">Interview Summary Report</h1>
+                    <p class="text-gray-400 mt-2" data-lang-key="summary_tagline">Aapke performance ka detailed analysis.</p>
                 </div>
-            </div>
-
-            <div id="statusIndicator" class="flex items-center justify-center space-x-3 bg-black/20 p-3 rounded-full mx-auto w-fit">
-                <div id="statusIconContainer"></div>
-                <span id="statusText" class="text-gray-300 font-medium" data-lang-key="status_waiting">Waiting to start...</span>
-            </div>
-
-            <div class="flex items-start space-x-4">
-                <div class="flex-shrink-0 w-10 h-10 rounded-full bg-gray-600 flex items-center justify-center">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>
+                <div id="summaryContent" class="bg-black/20 p-6 rounded-xl space-y-4 border border-white/10">
+                    <div id="summaryPlaceholder" class="flex justify-center items-center h-40">
+                        <svg class="animate-spin h-8 w-8 text-indigo-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                    </div>
                 </div>
-                <div id="transcriptContainer" class="bg-black/20 p-4 rounded-xl border border-white/10 min-h-[80px] flex-1">
-                     <p class="text-gray-400 text-sm font-semibold mb-2" data-lang-key="your_answer_label">AAPKA JAWAB</p>
-                     <p id="userTranscript" class="text-gray-200 italic" data-lang-key="transcript_placeholder">Yahan aapka bola hua jawab dikhega...</p>
-                </div>
-            </div>
-
-            <div id="feedbackContainer" class="hidden bg-indigo-500/10 p-4 rounded-xl border border-indigo-500/30">
-                <p class="text-indigo-300 text-sm font-semibold mb-2" data-lang-key="feedback_label">AI Coach ka Feedback:</p>
-                <p id="aiFeedback" class="text-indigo-200"></p>
-            </div>
-            <div class="flex space-x-4 pt-4">
-                <button id="hintBtn" class="w-full btn-secondary text-white font-bold py-3 px-4 rounded-lg" data-lang-key="hint_btn">Hint Chahiye ✨</button>
-                <button id="endInterviewBtn" class="w-full bg-red-600 hover:bg-red-700 text-white font-bold py-3 px-4 rounded-lg transition-colors">
-                    Interview End Karein
+                <button id="restartBtn" class="w-full btn-primary" data-lang-key="restart_btn">
+                    Naya Interview Start Karein
                 </button>
             </div>
         </div>
-        
-        <!-- Summary Screen -->
-        <div id="summaryScreen" class="screen hidden glass-card p-8 space-y-6">
-            <div class="text-center">
-                <h1 class="text-3xl font-bold text-white" data-lang-key="summary_title">Interview Summary Report</h1>
-                <p class="text-gray-400 mt-2" data-lang-key="summary_tagline">Aapke performance ka detailed analysis.</p>
-            </div>
-            <div id="summaryContent" class="bg-black/20 p-6 rounded-xl space-y-4 border border-white/10">
-                <div id="summaryPlaceholder" class="flex justify-center items-center h-40">
-                    <svg class="animate-spin h-8 w-8 text-indigo-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                    </svg>
-                </div>
-            </div>
-            <button id="restartBtn" class="w-full btn-primary" data-lang-key="restart_btn">
-                Naya Interview Start Karein
-            </button>
-        </div>
-    </div>
+    </main>
+
+    <footer class="w-full text-center p-4 text-gray-500 text-sm">
+        <p>&copy; 2024 AI Interview Coach. All Rights Reserved.</p>
+    </footer>
 
     <script>
         // --- DOM Elements ---
@@ -264,7 +281,7 @@
         let isInterviewActive = false;
         let currentLang = 'en';
         let loginAndStart = false; 
-        
+
         // --- Translation Strings ---
         const translations = {
             en: { main_title: "AI Interview Coach", tagline: "Practice for your dream job.", select_language: "Interview Language", job_title_label: "Job Title", job_desc_label: "Job Description", generate_desc_btn: "Generate Description ✨", job_desc_placeholder: "Paste job description here...", difficulty_label: "Difficulty Level", difficulty_easy: "Easy", difficulty_medium: "Medium", difficulty_hard: "Hard", start_btn: "Start Practice", interview_in_progress: "Interview in Progress...", ai_question_label: "AI COACH", your_answer_label: "YOUR RESPONSE", status_waiting: "Waiting to start...", transcript_placeholder: "Your spoken answer will appear here...", feedback_label: "AI Coach's Feedback:", hint_btn: "Give me a Hint ✨", end_btn: "End Interview", summary_title: "Interview Summary Report", summary_tagline: "A detailed analysis of your performance.", summary_generating: "Generating your report...", restart_btn: "Start New Interview", status_listening: "Listening... You can start speaking.", status_processing: "Processing your answer...", status_thinking: "AI Coach is thinking...", status_generating_desc: "Generating description...", status_generating_hint: "Preparing a hint...", status_ready: "Ready", status_mic_error: "Mic error. Please check your microphone.", status_network_error: "Network error. Please check your connection.", status_no_speech: "Didn't hear that. Could you please repeat?", alert_no_jd: "Please enter a job description to start.", alert_no_title_for_jd: "Please enter a job title to generate a description." },
@@ -346,7 +363,6 @@
             updateStatus('status_processing', 'thinking');
         }
 
-        // THIS IS THE DEPLOYMENT-READY FUNCTION
         async function callGeminiAPI(history, purpose = "interview") {
             let statusKey = 'status_thinking';
             if (purpose === 'description') statusKey = 'status_generating_desc';
@@ -354,7 +370,6 @@
             updateStatus(statusKey, 'thinking');
        
             try {
-                // We are calling our backend function, not Google's API directly
                 const response = await fetch('/.netlify/functions/gemini', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -525,10 +540,13 @@
         function updateUserUI(user) {
             if (user) {
                 drawerContent.innerHTML = `
-                    <div class="text-center">
+                    <div class="text-center flex-grow">
                         <h2 class="text-xl font-bold">${user.user_metadata.full_name || 'User'}</h2>
                         <p class="text-sm text-gray-400">${user.email}</p>
                         <button id="logoutBtn" class="w-full mt-6 bg-red-600/80 text-white py-2 rounded-lg hover:bg-red-600">Logout</button>
+                    </div>
+                    <div class="text-center text-xs text-gray-500 mt-4">
+                        Version 1.0.1
                     </div>
                 `;
                 document.getElementById('logoutBtn').addEventListener('click', () => {
@@ -537,10 +555,13 @@
                 });
             } else {
                 drawerContent.innerHTML = `
-                    <div class="text-center">
+                    <div class="text-center flex-grow">
                         <h2 class="text-xl font-bold">Welcome</h2>
                         <p class="text-sm text-gray-400 mb-6">Login to start your practice.</p>
                         <button id="loginBtnDrawer" class="w-full btn-primary">Login with Google</button>
+                    </div>
+                     <div class="text-center text-xs text-gray-500 mt-4">
+                        Version 1.0.1
                     </div>
                 `;
                 document.getElementById('loginBtnDrawer').addEventListener('click', () => netlifyIdentity.open());
