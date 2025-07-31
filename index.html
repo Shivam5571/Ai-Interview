@@ -265,10 +265,6 @@
         let currentLang = 'en';
         let loginAndStart = false; 
         
-        // ⚠️ IMPORTANT: Paste your API Key here for LOCAL TESTING ONLY.
-        // DO NOT DEPLOY THIS CODE WITH THE KEY IN IT.
-        const apiKey = ""; // <--- YAHAN APNI API KEY PASTE KAREIN
-
         // --- Translation Strings ---
         const translations = {
             en: { main_title: "AI Interview Coach", tagline: "Practice for your dream job.", select_language: "Interview Language", job_title_label: "Job Title", job_desc_label: "Job Description", generate_desc_btn: "Generate Description ✨", job_desc_placeholder: "Paste job description here...", difficulty_label: "Difficulty Level", difficulty_easy: "Easy", difficulty_medium: "Medium", difficulty_hard: "Hard", start_btn: "Start Practice", interview_in_progress: "Interview in Progress...", ai_question_label: "AI COACH", your_answer_label: "YOUR RESPONSE", status_waiting: "Waiting to start...", transcript_placeholder: "Your spoken answer will appear here...", feedback_label: "AI Coach's Feedback:", hint_btn: "Give me a Hint ✨", end_btn: "End Interview", summary_title: "Interview Summary Report", summary_tagline: "A detailed analysis of your performance.", summary_generating: "Generating your report...", restart_btn: "Start New Interview", status_listening: "Listening... You can start speaking.", status_processing: "Processing your answer...", status_thinking: "AI Coach is thinking...", status_generating_desc: "Generating description...", status_generating_hint: "Preparing a hint...", status_ready: "Ready", status_mic_error: "Mic error. Please check your microphone.", status_network_error: "Network error. Please check your connection.", status_no_speech: "Didn't hear that. Could you please repeat?", alert_no_jd: "Please enter a job description to start.", alert_no_title_for_jd: "Please enter a job title to generate a description." },
@@ -350,26 +346,19 @@
             updateStatus('status_processing', 'thinking');
         }
 
-        // UPDATED FUNCTION for Local Testing
+        // THIS IS THE DEPLOYMENT-READY FUNCTION
         async function callGeminiAPI(history, purpose = "interview") {
             let statusKey = 'status_thinking';
             if (purpose === 'description') statusKey = 'status_generating_desc';
             if (purpose === 'hint') statusKey = 'status_generating_hint';
             updateStatus(statusKey, 'thinking');
-
-            if (!apiKey) {
-                console.error("API Key is missing.");
-                speak("API Key is missing. Please add it to the script.", () => updateStatus('status_network_error', 'error'));
-                return null;
-            }
        
-            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${apiKey}`;
-
             try {
-                const response = await fetch(apiUrl, {
+                // We are calling our backend function, not Google's API directly
+                const response = await fetch('/.netlify/functions/gemini', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ contents: history, generationConfig: { temperature: 0.75, topP: 1.0 } })
+                    body: JSON.stringify({ history: history })
                 });
        
                 if (!response.ok) {
@@ -617,7 +606,7 @@
             };
             
             recognition.onend = () => {
-                if (isInterviewActive && isListening) {
+                if (isListening && isInterviewActive) {
                     isListening = false;
                     startListening();
                 }
