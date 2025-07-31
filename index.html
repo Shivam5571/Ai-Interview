@@ -525,17 +525,39 @@
         async function handleGenerateDescription() {
             const jobTitle = jobTitleInput.value.trim();
             if (!jobTitle) { alert(translations[currentLang].alert_no_title_for_jd); return; }
+            
+            const originalButtonHTML = generateDescBtn.innerHTML;
             generateDescBtn.disabled = true;
+            generateDescBtn.innerHTML = `
+                <svg class="animate-spin -ml-1 mr-2 h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                Generating...
+            `;
+            generateDescBtn.classList.add('flex', 'items-center', 'justify-center');
+            
             jobDescriptionInput.placeholder = translations[currentLang].status_generating_desc;
             
             const prompt = `You are an expert HR manager. Write a detailed job description for the following job title: "${jobTitle}". Include typical responsibilities, required skills, and qualifications. The description should be well-formatted and professional. Write the description in English.`;
-            const description = await callGeminiAPI([{ role: "user", parts: [{ text: prompt }] }], "description");
             
-            if (description) jobDescriptionInput.value = description;
-            else jobDescriptionInput.placeholder = "Description generation failed. Please try again.";
-            
-            generateDescBtn.disabled = false;
-            updateStatus('status_ready', 'waiting');
+            try {
+                const description = await callGeminiAPI([{ role: "user", parts: [{ text: prompt }] }], "description");
+                
+                if (description) {
+                    jobDescriptionInput.value = description;
+                } else {
+                    jobDescriptionInput.placeholder = "Description generation failed. Please try again.";
+                }
+            } catch (error) {
+                 console.error("Error during description generation:", error);
+                 jobDescriptionInput.placeholder = "Description generation failed. Please try again.";
+            } finally {
+                generateDescBtn.disabled = false;
+                generateDescBtn.innerHTML = originalButtonHTML;
+                generateDescBtn.classList.remove('flex', 'items-center', 'justify-center');
+                updateStatus('status_ready', 'waiting');
+            }
         }
         
         async function handleHint() {
