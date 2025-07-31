@@ -1,0 +1,526 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Interview Coach</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- Netlify Identity Widget Script -->
+    <script type="text/javascript" src="https://identity.netlify.com/v1/netlify-identity-widget.js"></script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #0B1120;
+            background-image: radial-gradient(circle at top right, #4f46e530, #0B1120 40%);
+            color: #E0E0E0;
+        }
+        .screen {
+            transition: opacity 0.5s ease-in-out, transform 0.5s ease-in-out;
+            width: 100%;
+        }
+        .screen.hidden {
+            opacity: 0;
+            transform: scale(0.95);
+            pointer-events: none;
+            position: absolute;
+        }
+        .glass-card {
+            background: rgba(17, 24, 39, 0.6);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 1.5rem;
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+        }
+        .btn-primary {
+            background: #4f46e5;
+            color: white;
+            font-weight: 600;
+            border-radius: 0.75rem;
+            padding: 0.875rem 1.5rem;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px -5px rgba(79, 70, 229, 0.7);
+        }
+        .btn-primary:hover {
+            transform: translateY(-3px);
+            background: #5a52d6;
+            box-shadow: 0 7px 20px -5px rgba(79, 70, 229, 0.8);
+        }
+        .btn-secondary {
+            background-color: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            transition: background-color 0.3s ease;
+        }
+        .btn-secondary:hover {
+            background-color: rgba(255, 255, 255, 0.15);
+        }
+        .form-input, .form-select, .form-textarea {
+            background-color: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 0.75rem;
+            padding: 0.875rem;
+            transition: all 0.2s ease;
+        }
+        .form-input:focus, .form-select:focus, .form-textarea:focus {
+            outline: none;
+            border-color: #4f46e5;
+            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.5);
+        }
+        #summaryContent h2 { font-size: 1.5rem; font-weight: 700; color: #4f46e5; margin-bottom: 1rem; border-bottom: 1px solid rgba(255,255,255,0.2); padding-bottom: 0.5rem; }
+        #summaryContent h3 { font-size: 1.125rem; font-weight: 600; color: #E0E0E0; margin-top: 1.5rem; margin-bottom: 0.75rem; }
+        #summaryContent p { color: #A0A0A0; }
+        #summaryContent strong { color: #C0C0C0; }
+        #summaryContent ul { list-style-type: disc; padding-left: 1.5rem; }
+        #summaryContent .summary-block { background-color: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.1); padding: 1rem; border-radius: 1rem; margin-bottom: 1rem;}
+    </style>
+</head>
+<body class="flex items-center justify-center min-h-screen p-4">
+
+    <div id="app" class="w-full max-w-3xl mx-auto relative">
+        
+        <!-- User Info / Login Section -->
+        <div id="user-section" class="absolute top-4 right-4 z-10">
+            <div data-netlify-identity-button></div>
+        </div>
+
+        <!-- Login Screen -->
+        <div id="loginScreen" class="screen glass-card p-8 text-center">
+            <h1 class="text-4xl font-extrabold text-white">Welcome!</h1>
+            <p class="text-gray-400 mt-2 mb-6">Please log in to start your interview practice.</p>
+            <div data-netlify-identity-button></div>
+        </div>
+
+        <!-- Setup Screen -->
+        <div id="setupScreen" class="screen hidden glass-card p-8 space-y-6">
+            <div class="text-center">
+                <h1 class="text-4xl font-extrabold text-white" data-lang-key="main_title">AI Interview Coach</h1>
+                <p class="text-gray-400 mt-2" data-lang-key="tagline">Apne dream job ke liye practice karein.</p>
+            </div>
+            <div class="space-y-4">
+                 <div>
+                    <label for="languageSelector" class="block text-sm font-medium text-gray-300 mb-2" data-lang-key="select_language">Interview Language</label>
+                    <select id="languageSelector" class="form-select w-full">
+                        <option value="en">English</option>
+                        <option value="hi">Hinglish</option>
+                    </select>
+                </div>
+                <div>
+                    <label for="jobTitle" class="block text-sm font-medium text-gray-300 mb-2" data-lang-key="job_title_label">Job Title</label>
+                    <input type="text" id="jobTitle" class="form-input w-full" placeholder="e.g., Senior Software Engineer">
+                </div>
+                <div>
+                    <div class="flex justify-between items-center mb-2">
+                        <label for="jobDescription" class="block text-sm font-medium text-gray-300" data-lang-key="job_desc_label">Job Description</label>
+                        <button id="generateDescBtn" class="text-sm text-indigo-400 hover:text-indigo-300 font-semibold" data-lang-key="generate_desc_btn">Generate Description ✨</button>
+                    </div>
+                    <textarea id="jobDescription" rows="6" class="form-textarea w-full" data-lang-key="job_desc_placeholder" placeholder="Yahan job description paste karein..."></textarea>
+                </div>
+                <div>
+                    <label for="difficulty" class="block text-sm font-medium text-gray-300 mb-2" data-lang-key="difficulty_label">Difficulty Level</label>
+                    <select id="difficulty" class="form-select w-full">
+                        <option value="Easy" data-lang-key="difficulty_easy">Easy</option>
+                        <option value="Medium" selected data-lang-key="difficulty_medium">Medium</option>
+                        <option value="Hard" data-lang-key="difficulty_hard">Hard</option>
+                    </select>
+                </div>
+            </div>
+            <button id="startInterviewBtn" class="w-full btn-primary" data-lang-key="start_btn">
+                Practice Shuru Karein
+            </button>
+        </div>
+
+        <!-- Interview Screen -->
+        <div id="interviewScreen" class="screen hidden glass-card p-8 space-y-6">
+            <div class="text-center">
+                <h1 id="interviewTitle" class="text-2xl font-bold text-white" data-lang-key="interview_in_progress">Interview in Progress...</h1>
+            </div>
+            <div class="bg-black/20 p-6 rounded-xl shadow-lg border border-white/10">
+                <p class="text-indigo-400 text-sm font-semibold mb-2" data-lang-key="ai_question_label">AI COACH</p>
+                <p id="aiQuestion" class="text-lg text-white font-medium min-h-[56px]">Coach interview shuru karne ke liye taiyaar ho raha hai...</p>
+            </div>
+            <div class="space-y-4">
+                <div id="statusIndicator" class="flex items-center justify-center space-x-3 bg-black/20 p-3 rounded-lg">
+                    <div id="statusIconContainer"></div>
+                    <span id="statusText" class="text-gray-300 font-medium" data-lang-key="status_waiting">Waiting to start...</span>
+                </div>
+                <div id="transcriptContainer" class="bg-black/20 p-4 rounded-lg border border-white/10 min-h-[80px]">
+                     <p class="text-gray-400 text-sm font-semibold mb-2" data-lang-key="your_answer_label">AAPKA JAWAB</p>
+                     <p id="userTranscript" class="text-gray-200 italic" data-lang-key="transcript_placeholder">Yahan aapka bola hua jawab dikhega...</p>
+                </div>
+            </div>
+            <div id="feedbackContainer" class="hidden bg-indigo-500/10 p-4 rounded-xl border border-indigo-500/30">
+                <p class="text-indigo-300 text-sm font-semibold mb-2" data-lang-key="feedback_label">AI Coach ka Feedback:</p>
+                <p id="aiFeedback" class="text-indigo-200"></p>
+            </div>
+            <div class="flex space-x-4">
+                <button id="hintBtn" class="w-full btn-secondary text-white font-bold py-3 px-4 rounded-lg" data-lang-key="hint_btn">Hint Chahiye ✨</button>
+                <button id="endInterviewBtn" class="w-full bg-red-600 hover:bg-red-700 text-white font-bold py-3 px-4 rounded-lg transition-colors">
+                    Interview End Karein
+                </button>
+            </div>
+        </div>
+        
+        <!-- Summary Screen -->
+        <div id="summaryScreen" class="screen hidden glass-card p-8 space-y-6">
+            <div class="text-center">
+                <h1 class="text-3xl font-bold text-white" data-lang-key="summary_title">Interview Summary Report</h1>
+                <p class="text-gray-400 mt-2" data-lang-key="summary_tagline">Aapke performance ka detailed analysis.</p>
+            </div>
+            <div id="summaryContent" class="bg-black/20 p-6 rounded-xl space-y-4 border border-white/10">
+                <div id="summaryPlaceholder" class="flex justify-center items-center h-40">
+                    <svg class="animate-spin h-8 w-8 text-indigo-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                </div>
+            </div>
+            <button id="restartBtn" class="w-full btn-primary" data-lang-key="restart_btn">
+                Naya Interview Start Karein
+            </button>
+        </div>
+    </div>
+
+    <script>
+        // --- DOM Elements ---
+        const loginScreen = document.getElementById('loginScreen');
+        const setupScreen = document.getElementById('setupScreen');
+        const interviewScreen = document.getElementById('interviewScreen');
+        const summaryScreen = document.getElementById('summaryScreen');
+        const startInterviewBtn = document.getElementById('startInterviewBtn');
+        const endInterviewBtn = document.getElementById('endInterviewBtn');
+        const restartBtn = document.getElementById('restartBtn');
+        const generateDescBtn = document.getElementById('generateDescBtn');
+        const hintBtn = document.getElementById('hintBtn');
+        const languageSelector = document.getElementById('languageSelector');
+        const jobTitleInput = document.getElementById('jobTitle');
+        const jobDescriptionInput = document.getElementById('jobDescription');
+        const difficultyInput = document.getElementById('difficulty');
+        const interviewTitle = document.getElementById('interviewTitle');
+        const aiQuestion = document.getElementById('aiQuestion');
+        const statusIconContainer = document.getElementById('statusIconContainer');
+        const statusText = document.getElementById('statusText');
+        const userTranscript = document.getElementById('userTranscript');
+        const feedbackContainer = document.getElementById('feedbackContainer');
+        const aiFeedback = document.getElementById('aiFeedback');
+        const summaryContent = document.getElementById('summaryContent');
+        const summaryPlaceholder = document.getElementById('summaryPlaceholder');
+
+        // --- Speech Recognition & Synthesis ---
+        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+        const recognition = SpeechRecognition ? new SpeechRecognition() : null;
+        let silenceTimeout;
+        let englishVoice, hindiVoice;
+
+        // --- State Management ---
+        let conversationHistory = [];
+        let interviewLog = [];
+        let currentQuestion = "";
+        let isListening = false;
+        let isInterviewActive = false;
+        let currentLang = 'en';
+
+        // --- Translation Strings ---
+        const translations = {
+            en: { main_title: "AI Interview Coach", tagline: "Practice for your dream job.", select_language: "Interview Language", job_title_label: "Job Title", job_desc_label: "Job Description", generate_desc_btn: "Generate Description ✨", job_desc_placeholder: "Paste job description here...", difficulty_label: "Difficulty Level", difficulty_easy: "Easy", difficulty_medium: "Medium", difficulty_hard: "Hard", start_btn: "Start Practice", interview_in_progress: "Interview in Progress...", ai_question_label: "AI COACH", your_answer_label: "YOUR RESPONSE", status_waiting: "Waiting to start...", transcript_placeholder: "Your spoken answer will appear here...", feedback_label: "AI Coach's Feedback:", hint_btn: "Give me a Hint ✨", end_btn: "End Interview", summary_title: "Interview Summary Report", summary_tagline: "A detailed analysis of your performance.", summary_generating: "Generating your report...", restart_btn: "Start New Interview", status_listening: "Listening... You can start speaking.", status_processing: "Processing your answer...", status_thinking: "AI Coach is thinking...", status_generating_desc: "Generating description...", status_generating_hint: "Preparing a hint...", status_ready: "Ready", status_mic_error: "Mic error. Please check your microphone.", status_network_error: "Network error. Please check your connection.", status_no_speech: "Didn't hear that. Could you please repeat?", alert_no_jd: "Please enter a job description to start.", alert_no_title_for_jd: "Please enter a job title to generate a description." },
+            hi: { main_title: "AI Interview Coach", tagline: "Apne dream job ke liye practice karein.", select_language: "Interview Language", job_title_label: "Job Title", job_desc_label: "Job Description", generate_desc_btn: "Description Generate Karein ✨", job_desc_placeholder: "Job description yahan paste karein...", difficulty_label: "Difficulty Level", difficulty_easy: "Easy", difficulty_medium: "Medium", difficulty_hard: "Hard", start_btn: "Practice Shuru Karein", interview_in_progress: "Interview chal raha hai...", ai_question_label: "AI COACH", your_answer_label: "AAPKA JAWAB", status_waiting: "Start hone ka wait hai...", transcript_placeholder: "Aapka bola hua jawab yahan dikhega...", feedback_label: "AI Coach ka Feedback:", hint_btn: "Hint Chahiye ✨", end_btn: "Interview End Karein", summary_title: "Interview Summary Report", summary_tagline: "Aapke performance ka detailed analysis.", summary_generating: "Aapki report generate ho rahi hai...", restart_btn: "Naya Interview Start Karein", status_listening: "Suna ja raha hai... Aap bol sakte hain.", status_processing: "Aapka answer process ho raha hai...", status_thinking: "AI Coach soch raha hai...", status_generating_desc: "Description generate ho rahi hai...", status_generating_hint: "Hint taiyaar ho raha hai...", status_ready: "Ready", status_mic_error: "Mic error. Please apna microphone check karein.", status_network_error: "Network error. Please apna connection check karein.", status_no_speech: "Kuch sunai nahi diya. Please repeat karein.", alert_no_jd: "Start karne ke liye please job description dalein.", alert_no_title_for_jd: "Description generate karne ke liye please job title dalein." }
+        };
+
+        // --- UI Functions ---
+        function showScreen(screenId) {
+            document.querySelectorAll('.screen').forEach(screen => {
+                screen.classList.toggle('hidden', screen.id !== screenId);
+            });
+        }
+
+        function setLanguage(lang) {
+            currentLang = lang;
+            document.querySelectorAll('[data-lang-key]').forEach(el => {
+                const key = el.getAttribute('data-lang-key');
+                if (translations[lang][key]) {
+                    if (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA') {
+                        el.placeholder = translations[lang][key];
+                    } else {
+                        el.textContent = translations[lang][key];
+                    }
+                }
+            });
+        }
+
+        const icons = {
+            waiting: `<div class="w-3 h-3 bg-gray-500 rounded-full"></div>`,
+            listening: `<div class="w-4 h-4 rounded-full bg-green-500 animate-pulse"></div>`,
+            thinking: `<svg class="animate-spin h-5 w-5 text-indigo-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>`,
+            error: `<div class="w-3 h-3 bg-red-500 rounded-full"></div>`
+        };
+
+        function updateStatus(key, iconType) {
+            statusText.textContent = translations[currentLang][key] || key;
+            statusIconContainer.innerHTML = icons[iconType] || icons.waiting;
+        }
+        
+        // --- Speech & AI Functions ---
+        function setupSpeechSynthesis() {
+            const voices = speechSynthesis.getVoices();
+            englishVoice = voices.find(v => v.lang === 'en-US' && v.name.includes('Google'));
+            hindiVoice = voices.find(v => v.lang === 'hi-IN' && v.name.includes('Google'));
+            if (!englishVoice) englishVoice = voices.find(v => v.lang === 'en-US');
+            if (!hindiVoice) hindiVoice = voices.find(v => v.lang === 'hi-IN');
+        }
+
+        function speak(text, onEndCallback) {
+            feedbackContainer.classList.add('hidden');
+            aiQuestion.textContent = text;
+            const utterance = new SpeechSynthesisUtterance(text);
+            if (currentLang === 'hi' && hindiVoice) {
+                utterance.voice = hindiVoice;
+                utterance.lang = 'hi-IN';
+            } else {
+                utterance.voice = englishVoice;
+                utterance.lang = 'en-US';
+            }
+            utterance.rate = 0.95;
+            utterance.onend = onEndCallback;
+            utterance.onerror = (e) => { console.error("Speech synthesis error:", e.error); onEndCallback(); };
+            window.speechSynthesis.speak(utterance);
+        }
+
+        function startListening() {
+            if (!recognition || isListening) return;
+            isListening = true;
+            recognition.lang = currentLang === 'hi' ? 'hi-IN' : 'en-IN';
+            updateStatus('status_listening', 'listening');
+            recognition.start();
+        }
+        
+        function stopListening() {
+            if (!recognition || !isListening) return;
+            isListening = false;
+            recognition.stop();
+            clearTimeout(silenceTimeout);
+            updateStatus('status_processing', 'thinking');
+        }
+
+        async function callGeminiAPI(history, purpose = "interview") {
+            let statusKey = 'status_thinking';
+            if (purpose === 'description') statusKey = 'status_generating_desc';
+            if (purpose === 'hint') statusKey = 'status_generating_hint';
+            updateStatus(statusKey, 'thinking');
+       
+            try {
+                const response = await fetch('/.netlify/functions/gemini', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ history: history })
+                });
+       
+                if (!response.ok) {
+                    throw new Error(`API request failed with status ${response.status}`);
+                }
+       
+                const result = await response.json();
+       
+                if (result.candidates && result.candidates.length > 0) {
+                    return result.candidates[0].content.parts[0].text;
+                }
+                throw new Error(result.error || "No response from AI.");
+       
+            } catch (error) {
+                console.error("API Error:", error);
+                speak(translations[currentLang].status_network_error, () => updateStatus('status_network_error', 'error'));
+                return null;
+            }
+        }
+        
+        // --- Core Logic Functions ---
+        async function handleInterviewTurn(userAnswer) {
+             if(userAnswer) conversationHistory.push({ role: "user", parts: [{ text: userAnswer }] });
+             const aiResponseText = await callGeminiAPI(conversationHistory, "interview");
+             
+             if(aiResponseText){
+                conversationHistory.push({ role: "model", parts: [{ text: aiResponseText }] });
+                const parts = aiResponseText.split('|||');
+                let feedback = "", idealAnswer = "", nextQuestion = "";
+
+                if (parts.length === 3) {
+                    [feedback, idealAnswer, nextQuestion] = parts.map(p => p.trim());
+                    if(currentQuestion && userTranscript.textContent !== translations[currentLang].transcript_placeholder){
+                       interviewLog.push({ question: currentQuestion, userAnswer: userTranscript.textContent, feedback, idealAnswer });
+                    }
+                } else {
+                    nextQuestion = aiResponseText;
+                }
+                currentQuestion = nextQuestion;
+                if (feedback) {
+                    aiFeedback.textContent = feedback;
+                    feedbackContainer.classList.remove('hidden');
+                }
+                speak(nextQuestion, () => { if (isInterviewActive) startListening(); });
+             }
+        }
+
+        function startInterview() {
+            const jobTitle = jobTitleInput.value.trim();
+            const jobDescription = jobDescriptionInput.value.trim();
+            const difficulty = difficultyInput.value;
+            const languageName = currentLang === 'hi' ? 'Hinglish (a mix of Hindi and English)' : 'English';
+
+            if (!jobDescription) { alert(translations[currentLang].alert_no_jd); return; }
+            if (!recognition) { alert("Your browser doesn't support Speech Recognition. Please use Google Chrome."); return; }
+
+            isInterviewActive = true;
+            showScreen('interviewScreen');
+            interviewTitle.textContent = `${jobTitle || 'Role'} ke liye Interview`;
+
+            const initialPrompt = `You are an expert, friendly, and encouraging AI Interview Coach named 'Alex'. Your task is to conduct a supportive mock interview entirely in ${languageName}. Here are your instructions: 1. Start with a warm welcome in ${languageName}, introduce yourself as an AI coach, and then ask the very first question in ${languageName}. 2. After I provide an answer, you MUST respond in three parts, separated by "|||". 3. Part 1: Brief, positive, and constructive feedback on my answer, in ${languageName}. 4. Part 2: A well-structured, ideal answer for the question asked, in ${languageName}. 5. Part 3: A hint for the next topic, followed by the next relevant interview question, in ${languageName}. 6. Maintain a friendly, coaching tone throughout. Ask a mix of technical, behavioral, and situational questions based on the job description and the selected difficulty level. Job Description: "${jobDescription}" Difficulty Level: "${difficulty}" Begin the interview now. Your first response should only contain the welcome and the first question in ${languageName}.`;
+            
+            conversationHistory = [{ role: "user", parts: [{ text: initialPrompt }] }];
+            handleInterviewTurn("");
+        }
+        
+        async function endInterview() {
+            isInterviewActive = false;
+            stopListening();
+            window.speechSynthesis.cancel();
+            showScreen('summaryScreen');
+
+            const summaryPrompt = `Based on the following interview log, please generate a comprehensive summary report for the user in ${currentLang === 'hi' ? 'Hinglish' : 'English'}. The report should have two main sections. Format the entire output using simple HTML tags. Use <h2> for main titles, <h3> for subtitles, <p> for text, <strong> for highlighting, and <ul>/<li> for lists. Create a container div with class 'summary-block' for each question-answer pair. Do not include <html> or <body> tags. 1. <h2>Overall Performance</h2>: A friendly, overall summary. Highlight strengths and point out key areas for improvement constructively. 2. <h2>Question Breakdown</h2>: For each item in the log, present the Question, the User's Answer, and the Ideal Answer in a clear, easy-to-read format inside a 'summary-block' div. Interview Log: ${JSON.stringify(interviewLog, null, 2)}`;
+            
+            summaryPlaceholder.style.display = 'flex';
+            summaryContent.innerHTML = '';
+            summaryContent.appendChild(summaryPlaceholder);
+
+            const summaryHTML = await callGeminiAPI([{ role: "user", parts: [{ text: summaryPrompt }] }], "summary");
+            if (summaryHTML) {
+                summaryPlaceholder.style.display = 'none';
+                summaryContent.innerHTML = summaryHTML;
+            } else {
+                 summaryContent.innerHTML = `<p class="text-red-400">${translations[currentLang].summary_generating_error || 'Sorry, an error occurred while generating the summary.'}</p>`;
+            }
+        }
+        
+        async function handleGenerateDescription() {
+            const jobTitle = jobTitleInput.value.trim();
+            if (!jobTitle) { alert(translations[currentLang].alert_no_title_for_jd); return; }
+            generateDescBtn.disabled = true;
+            jobDescriptionInput.placeholder = translations[currentLang].status_generating_desc;
+            
+            const prompt = `You are an expert HR manager. Write a detailed job description for the following job title: "${jobTitle}". Include typical responsibilities, required skills, and qualifications. The description should be well-formatted and professional. Write the description in English.`;
+            const description = await callGeminiAPI([{ role: "user", parts: [{ text: prompt }] }], "description");
+            
+            if (description) jobDescriptionInput.value = description;
+            else jobDescriptionInput.placeholder = "Description generation failed. Please try again.";
+            
+            generateDescBtn.disabled = false;
+            updateStatus('status_ready', 'waiting');
+        }
+        
+        async function handleHint() {
+            if (!isInterviewActive || !currentQuestion) return;
+            hintBtn.disabled = true;
+            
+            const prompt = `The user is stuck on the following interview question: "${currentQuestion}". Provide a brief, one-sentence hint in ${currentLang === 'hi' ? 'Hinglish' : 'English'} to help them get started without giving away the full answer. The hint should be encouraging.`;
+            const hint = await callGeminiAPI([{ role: "user", parts: [{ text: prompt }] }], "hint");
+            
+            if (hint) {
+                aiFeedback.textContent = `${translations[currentLang].feedback_label.replace(':', '')}: ${hint}`;
+                feedbackContainer.classList.remove('hidden');
+            }
+            hintBtn.disabled = false;
+            updateStatus('status_listening', 'listening');
+        }
+
+        function resetApp(isLogout = false) {
+            isInterviewActive = false;
+            isListening = false;
+            window.speechSynthesis.cancel();
+            
+            if(isLogout) {
+                showScreen('loginScreen');
+            } else {
+                showScreen('setupScreen');
+            }
+
+            conversationHistory = [];
+            interviewLog = [];
+            jobTitleInput.value = '';
+            jobDescriptionInput.value = '';
+            setLanguage(languageSelector.value);
+            updateStatus('status_waiting', 'waiting');
+        }
+
+        // --- Event Listeners & Init ---
+        languageSelector.addEventListener('change', (e) => setLanguage(e.target.value));
+        startInterviewBtn.addEventListener('click', startInterview);
+        endInterviewBtn.addEventListener('click', endInterview);
+        restartBtn.addEventListener('click', () => resetApp(false));
+        generateDescBtn.addEventListener('click', handleGenerateDescription);
+        hintBtn.addEventListener('click', handleHint);
+        
+        // Netlify Identity Logic
+        netlifyIdentity.on('init', user => {
+            if (user) {
+                showScreen('setupScreen');
+            } else {
+                showScreen('loginScreen');
+            }
+        });
+
+        netlifyIdentity.on('login', user => {
+            netlifyIdentity.close();
+            showScreen('setupScreen');
+        });
+
+        netlifyIdentity.on('logout', () => {
+            resetApp(true);
+        });
+
+
+        window.addEventListener('load', () => {
+             setLanguage(languageSelector.value);
+             if ('speechSynthesis' in window) {
+                speechSynthesis.onvoiceschanged = setupSpeechSynthesis;
+             }
+             updateStatus('status_waiting', 'waiting');
+        });
+
+        if (recognition) {
+            recognition.onresult = (e) => {
+                let finalTranscript = '';
+                for (let i = e.resultIndex; i < e.results.length; ++i) {
+                    if (e.results[i].isFinal) finalTranscript += e.results[i][0].transcript;
+                }
+                userTranscript.textContent = finalTranscript || '...';
+                clearTimeout(silenceTimeout);
+                silenceTimeout = setTimeout(() => {
+                    if(isListening){
+                       stopListening();
+                       if(userTranscript.textContent && userTranscript.textContent !== '...') handleInterviewTurn(userTranscript.textContent);
+                    }
+                }, 2000);
+            };
+
+            recognition.onerror = (e) => {
+                console.error("Speech recognition error:", e.error);
+                isListening = false;
+                let errorKey = 'An unknown error occurred.';
+                if (e.error === 'network') errorKey = 'status_network_error';
+                else if (e.error === 'no-speech' && isInterviewActive) {
+                    speak(translations[currentLang].status_no_speech, () => { if(isInterviewActive) startListening(); });
+                    return;
+                } 
+                else if (e.error === 'audio-capture') errorKey = 'status_mic_error';
+                updateStatus(errorKey, 'error');
+            };
+            
+            recognition.onend = () => {
+                if (isInterviewActive && isListening) {
+                    isListening = false;
+                    startListening();
+                }
+            };
+        }
+    </script>
+</body>
+</html>
