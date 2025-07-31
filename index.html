@@ -568,18 +568,25 @@
 
         // --- History Functions ---
         function getInterviewHistory() {
-            return JSON.parse(localStorage.getItem('interviewHistory') || '[]');
+            const user = netlifyIdentity.currentUser();
+            if (!user) return [];
+            return JSON.parse(localStorage.getItem(`interviewHistory_${user.id}`) || '[]');
         }
 
         function saveInterviewToHistory(interviewData) {
+            const user = netlifyIdentity.currentUser();
+            if (!user) return;
             const history = getInterviewHistory();
-            history.unshift(interviewData); // Add to the beginning
-            localStorage.setItem('interviewHistory', JSON.stringify(history));
+            history.unshift(interviewData);
+            localStorage.setItem(`interviewHistory_${user.id}`, JSON.stringify(history));
+            updateUserUI(user); // Refresh drawer UI immediately
         }
 
         function clearInterviewHistory() {
-            localStorage.removeItem('interviewHistory');
-            updateUserUI(netlifyIdentity.currentUser()); // Refresh drawer
+            const user = netlifyIdentity.currentUser();
+            if (!user) return;
+            localStorage.removeItem(`interviewHistory_${user.id}`);
+            updateUserUI(user); // Refresh drawer
         }
 
         function showHistorySummary(index) {
@@ -598,12 +605,12 @@
         languageSelector.addEventListener('change', (e) => setLanguage(e.target.value));
         
         startInterviewBtn.addEventListener('click', () => {
-            const user = window.netlifyIdentity ? netlifyIdentity.currentUser() : true; // Assume logged in for local
+            const user = window.netlifyIdentity ? netlifyIdentity.currentUser() : true;
             if (user) {
                 startInterview();
             } else {
                 loginAndStart = true;
-                netlifyIdentity.open(); // Show login popup
+                netlifyIdentity.open();
             }
         });
 
@@ -633,7 +640,7 @@
                     historyHTML = `
                         <div class="border-t border-white/10 mt-4 pt-4">
                             <h3 class="font-bold mb-2">Interview History</h3>
-                            <ul id="interview-history-list" class="space-y-2 text-sm">
+                            <ul id="interview-history-list" class="space-y-2 text-sm max-h-60 overflow-y-auto">
                                 ${history.map((item, index) => `<li class="p-2 rounded-md" data-history-index="${index}"><strong class="text-indigo-400">${item.title}</strong><br><span class="text-xs text-gray-400">${item.date}</span></li>`).join('')}
                             </ul>
                             <button id="clearHistoryBtn" class="w-full mt-4 text-xs text-red-400 hover:text-red-300">Clear History</button>
@@ -684,7 +691,7 @@
 
             netlifyIdentity.on('init', user => {
                 updateUserUI(user);
-                showScreen('setupScreen'); // Always show setup screen on load
+                showScreen('setupScreen');
             });
 
             netlifyIdentity.on('login', user => {
@@ -692,7 +699,7 @@
                 updateUserUI(user);
                 if (loginAndStart) {
                     loginAndStart = false;
-                    startInterview(); // Start interview automatically after login
+                    startInterview();
                 }
             });
 
@@ -711,7 +718,7 @@
              }
              updateStatus('status_waiting', 'waiting');
              showScreen('setupScreen');
-             if (!window.netlifyIdentity) { // If Netlify script is commented out
+             if (!window.netlifyIdentity) {
                 profileIconBtn.classList.add('hidden');
              }
         });
