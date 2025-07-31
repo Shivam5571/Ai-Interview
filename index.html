@@ -110,6 +110,13 @@
         #drawer-backdrop {
             transition: opacity 0.3s ease-in-out;
         }
+        #interview-history-list li {
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        #interview-history-list li:hover {
+            background-color: rgba(255,255,255,0.1);
+        }
     </style>
 </head>
 <body class="flex flex-col min-h-screen">
@@ -473,7 +480,10 @@
             isInterviewActive = false;
             stopListening();
             window.speechSynthesis.cancel();
-            showScreen('summaryScreen');
+            
+            const jobTitle = jobTitleInput.value.trim() || 'Practice Interview';
+            const date = new Date().toLocaleString();
+            let status = 'Needs Improvement'; // Default status
 
             const summaryPrompt = `Based on the following interview log, please generate a comprehensive summary report for the user in ${currentLang === 'hi' ? 'Hinglish' : 'English'}.
             The report MUST start with a single, overall interview status. Choose one from: "Strong Hire", "Good Potential", "Needs Improvement". Wrap this status in a div with an id, like this: <div id="interview-status">Strong Hire</div>.
@@ -484,6 +494,7 @@
             2. <h2>Question Breakdown</h2>: For each item in the log, present the Question, the User's Answer, and the Ideal Answer in a clear, easy-to-read format inside a 'summary-block' div.
             Interview Log: ${JSON.stringify(interviewLog, null, 2)}`;
             
+            showScreen('summaryScreen');
             summaryPlaceholder.style.display = 'flex';
             summaryContent.innerHTML = '';
             summaryContent.appendChild(summaryPlaceholder);
@@ -497,12 +508,15 @@
 
                 const statusElement = tempDiv.querySelector('#interview-status');
                 if (statusElement) {
-                    const status = statusElement.textContent.trim();
+                    status = statusElement.textContent.trim();
                     displayInterviewStatus(status);
                     statusElement.remove();
                 }
 
                 summaryContent.innerHTML = tempDiv.innerHTML;
+
+                // Save to history
+                saveInterviewToHistory({ title: jobTitle, date, status, summary: summaryContent.innerHTML });
             } else {
                  summaryContent.innerHTML = `<p class="text-red-400">${translations[currentLang].summary_generating_error || 'Sorry, an error occurred while generating the summary.'}</p>`;
             }
@@ -552,11 +566,39 @@
             updateStatus('status_waiting', 'waiting');
         }
 
+        // --- History Functions ---
+        function getInterviewHistory() {
+            return JSON.parse(localStorage.getItem('interviewHistory') || '[]');
+        }
+
+        function saveInterviewToHistory(interviewData) {
+            const history = getInterviewHistory();
+            history.unshift(interviewData); // Add to the beginning
+            localStorage.setItem('interviewHistory', JSON.stringify(history));
+        }
+
+        function clearInterviewHistory() {
+            localStorage.removeItem('interviewHistory');
+            updateUserUI(netlifyIdentity.currentUser()); // Refresh drawer
+        }
+
+        function showHistorySummary(index) {
+            const history = getInterviewHistory();
+            const record = history[index];
+            if (record) {
+                showScreen('summaryScreen');
+                displayInterviewStatus(record.status);
+                summaryPlaceholder.style.display = 'none';
+                summaryContent.innerHTML = record.summary;
+                toggleDrawer();
+            }
+        }
+
         // --- Event Listeners & Init ---
         languageSelector.addEventListener('change', (e) => setLanguage(e.target.value));
         
         startInterviewBtn.addEventListener('click', () => {
-            const user = netlifyIdentity.currentUser();
+            const user = window.netlifyIdentity ? netlifyIdentity.currentUser() : true; // Assume logged in for local
             if (user) {
                 startInterview();
             } else {
@@ -582,56 +624,84 @@
         drawerBackdrop.addEventListener('click', toggleDrawer);
 
         // Netlify Identity Logic
-        function updateUserUI(user) {
-            if (user) {
-                drawerContent.innerHTML = `
-                    <div class="text-center flex-grow">
-                        <h2 class="text-xl font-bold">${user.user_metadata.full_name || 'User'}</h2>
-                        <p class="text-sm text-gray-400">${user.email}</p>
-                        <button id="logoutBtn" class="w-full mt-6 bg-red-600/80 text-white py-2 rounded-lg hover:bg-red-600">Logout</button>
-                    </div>
-                    <div class="text-center text-xs text-gray-500 mt-4">
-                        Version 1.0.1
-                    </div>
-                `;
-                document.getElementById('logoutBtn').addEventListener('click', () => {
-                    toggleDrawer();
-                    netlifyIdentity.logout();
-                });
-            } else {
-                drawerContent.innerHTML = `
-                    <div class="text-center flex-grow">
-                        <h2 class="text-xl font-bold">Welcome</h2>
-                        <p class="text-sm text-gray-400 mb-6">Login to start your practice.</p>
-                        <button id="loginBtnDrawer" class="w-full btn-primary">Login with Google</button>
-                    </div>
-                     <div class="text-center text-xs text-gray-500 mt-4">
-                        Version 1.0.1
-                    </div>
-                `;
-                document.getElementById('loginBtnDrawer').addEventListener('click', () => netlifyIdentity.open());
+        if (window.netlifyIdentity) {
+            function updateUserUI(user) {
+                let historyHTML = '';
+                const history = getInterviewHistory();
+                
+                if (history.length > 0) {
+                    historyHTML = `
+                        <div class="border-t border-white/10 mt-4 pt-4">
+                            <h3 class="font-bold mb-2">Interview History</h3>
+                            <ul id="interview-history-list" class="space-y-2 text-sm">
+                                ${history.map((item, index) => `<li class="p-2 rounded-md" data-history-index="${index}"><strong class="text-indigo-400">${item.title}</strong><br><span class="text-xs text-gray-400">${item.date}</span></li>`).join('')}
+                            </ul>
+                            <button id="clearHistoryBtn" class="w-full mt-4 text-xs text-red-400 hover:text-red-300">Clear History</button>
+                        </div>
+                    `;
+                }
+
+                if (user) {
+                    drawerContent.innerHTML = `
+                        <div class="text-center flex-grow">
+                            <h2 class="text-xl font-bold">${user.user_metadata.full_name || 'User'}</h2>
+                            <p class="text-sm text-gray-400">${user.email}</p>
+                            <button id="logoutBtn" class="w-full mt-6 bg-red-600/80 text-white py-2 rounded-lg hover:bg-red-600">Logout</button>
+                            ${historyHTML}
+                        </div>
+                        <div class="text-center text-xs text-gray-500 mt-4">
+                            Version 1.0.1
+                        </div>
+                    `;
+                    document.getElementById('logoutBtn').addEventListener('click', () => {
+                        toggleDrawer();
+                        netlifyIdentity.logout();
+                    });
+                } else {
+                    drawerContent.innerHTML = `
+                        <div class="text-center flex-grow">
+                            <h2 class="text-xl font-bold">Welcome</h2>
+                            <p class="text-sm text-gray-400 mb-6">Login to start your practice.</p>
+                            <button id="loginBtnDrawer" class="w-full btn-primary">Login with Google</button>
+                            ${historyHTML}
+                        </div>
+                         <div class="text-center text-xs text-gray-500 mt-4">
+                            Version 1.0.1
+                        </div>
+                    `;
+                    document.getElementById('loginBtnDrawer').addEventListener('click', () => netlifyIdentity.open());
+                }
+
+                if (history.length > 0) {
+                    document.getElementById('clearHistoryBtn').addEventListener('click', clearInterviewHistory);
+                    document.querySelectorAll('#interview-history-list li').forEach(item => {
+                        item.addEventListener('click', (e) => {
+                            showHistorySummary(e.currentTarget.dataset.historyIndex);
+                        });
+                    });
+                }
             }
+
+            netlifyIdentity.on('init', user => {
+                updateUserUI(user);
+                showScreen('setupScreen'); // Always show setup screen on load
+            });
+
+            netlifyIdentity.on('login', user => {
+                netlifyIdentity.close();
+                updateUserUI(user);
+                if (loginAndStart) {
+                    loginAndStart = false;
+                    startInterview(); // Start interview automatically after login
+                }
+            });
+
+            netlifyIdentity.on('logout', () => {
+                updateUserUI(null);
+                resetApp();
+                showScreen('setupScreen');
+            });
         }
-
-        netlifyIdentity.on('init', user => {
-            updateUserUI(user);
-            showScreen('setupScreen'); // Always show setup screen on load
-        });
-
-        netlifyIdentity.on('login', user => {
-            netlifyIdentity.close();
-            updateUserUI(user);
-            if (loginAndStart) {
-                loginAndStart = false;
-                startInterview(); // Start interview automatically after login
-            }
-        });
-
-        netlifyIdentity.on('logout', () => {
-            updateUserUI(null);
-            resetApp();
-            showScreen('setupScreen');
-        });
 
 
         window.addEventListener('load', () => {
@@ -640,6 +710,10 @@
                 speechSynthesis.onvoiceschanged = setupSpeechSynthesis;
              }
              updateStatus('status_waiting', 'waiting');
+             showScreen('setupScreen');
+             if (!window.netlifyIdentity) { // If Netlify script is commented out
+                profileIconBtn.classList.add('hidden');
+             }
         });
 
         if (recognition) {
