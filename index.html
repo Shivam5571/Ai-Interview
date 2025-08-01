@@ -48,15 +48,18 @@
             box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
         }
         .btn-primary {
-            background: #2563eb;
+            background: #4f46e5;
             color: white;
             font-weight: 600;
             border-radius: 0.75rem;
             padding: 0.875rem 1.5rem;
             transition: all 0.3s ease;
+            box-shadow: 0 0 20px -5px rgba(79, 70, 229, 0.5);
         }
         .btn-primary:hover {
-            background: #1d4ed8;
+            transform: translateY(-3px);
+            background: #5a52d6;
+            box-shadow: 0 0 30px -5px rgba(79, 70, 229, 0.8);
         }
         .btn-secondary {
             background-color: rgba(255, 255, 255, 0.1);
@@ -66,20 +69,7 @@
         .btn-secondary:hover {
             background-color: rgba(255, 255, 255, 0.15);
         }
-        .form-input {
-            background-color: #FFFFFF;
-            border: 1px solid #D1D5DB;
-            border-radius: 0.75rem;
-            padding: 0.875rem;
-            transition: all 0.2s ease;
-            color: #111827;
-        }
-        .form-input:focus {
-            outline: none;
-            border-color: #2563eb;
-            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.5);
-        }
-        .form-select, .form-textarea {
+        .form-input, .form-select, .form-textarea {
             background-color: rgba(0, 0, 0, 0.2);
             border: 1px solid rgba(255, 255, 255, 0.1);
             border-radius: 0.75rem;
@@ -87,10 +77,21 @@
             transition: all 0.2s ease;
             color: #E0E0E0;
         }
-        .form-select:focus, .form-textarea:focus {
+        .form-input:focus, .form-select:focus, .form-textarea:focus {
             outline: none;
             border-color: #4f46e5;
             box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.5);
+        }
+        /* Fix for browser autofill styles */
+        input:-webkit-autofill,
+        input:-webkit-autofill:hover, 
+        input:-webkit-autofill:focus, 
+        input:-webkit-autofill:active {
+            -webkit-box-shadow: 0 0 0 30px #111827 inset !important;
+            -webkit-text-fill-color: #E0E0E0 !important;
+        }
+        .form-select option {
+            background: #111827;
         }
         #summaryContent h2 { font-size: 1.5rem; font-weight: 700; color: #4f46e5; margin-bottom: 1rem; border-bottom: 1px solid rgba(255,255,255,0.2); padding-bottom: 0.5rem; }
         #summaryContent h3 { font-size: 1.125rem; font-weight: 600; color: #E0E0E0; margin-top: 1.5rem; margin-bottom: 0.75rem; }
@@ -100,11 +101,22 @@
         #summaryContent .summary-block { background-color: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.1); padding: 1rem; border-radius: 1rem; margin-bottom: 1rem;}
         
         /* Drawer Styles */
-        #drawer { transition: transform 0.3s ease-in-out; }
-        #drawer.open { transform: translateX(0); }
-        #drawer-backdrop { transition: opacity 0.3s ease-in-out; }
-        #interview-history-list li { cursor: pointer; transition: background-color 0.2s; }
-        #interview-history-list li:hover { background-color: rgba(255,255,255,0.1); }
+        #drawer {
+            transition: transform 0.3s ease-in-out;
+        }
+        #drawer.open {
+            transform: translateX(0);
+        }
+        #drawer-backdrop {
+            transition: opacity 0.3s ease-in-out;
+        }
+        #interview-history-list li {
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        #interview-history-list li:hover {
+            background-color: rgba(255,255,255,0.1);
+        }
     </style>
 </head>
 <body class="flex flex-col min-h-screen">
@@ -115,10 +127,12 @@
 
     <!-- Drawer -->
     <div id="drawer" class="fixed top-0 right-0 h-full w-80 bg-gray-900/80 backdrop-blur-lg shadow-2xl z-40 transform translate-x-full">
-        <div id="drawer-content" class="p-6 flex flex-col h-full"></div>
+        <div id="drawer-content" class="p-6 flex flex-col h-full">
+            <!-- Drawer content will be populated by JavaScript -->
+        </div>
     </div>
 
-    <header id="main-header" class="w-full max-w-5xl mx-auto py-4 px-4 flex justify-between items-center">
+    <header class="w-full max-w-5xl mx-auto py-4 px-4 flex justify-between items-center">
         <h1 class="text-xl font-bold text-white">AI Interview Coach</h1>
         <button id="profile-icon-btn" class="w-12 h-12 rounded-full bg-white/10 flex items-center justify-center border border-white/20 hover:bg-white/20 transition-colors">
             <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>
@@ -127,48 +141,8 @@
 
     <main class="flex-grow flex items-center justify-center p-4">
         <div id="app" class="w-full max-w-3xl mx-auto relative">
-            
-            <!-- Auth Screen -->
-            <div id="authScreen" class="screen hidden">
-                <div class="bg-white rounded-2xl shadow-xl p-8 max-w-md mx-auto text-gray-800">
-                    <!-- Login Form -->
-                    <div id="login-form-container">
-                        <h2 class="text-4xl font-bold">Login</h2>
-                        <p class="text-gray-500 mt-2 mb-6">Please Enter Login Details To Sign In</p>
-                        <form id="login-form" class="space-y-4">
-                            <input id="login-email" type="email" class="form-input w-full" placeholder="Email Address" required>
-                            <input id="login-password" type="password" class="form-input w-full" placeholder="Password" required>
-                            <div class="flex justify-between items-center text-sm">
-                                <label class="flex items-center"><input type="checkbox" class="mr-2">Keep Me Logged In</label>
-                                <a href="#" id="forgot-password-link" class="text-blue-600 hover:underline">Forgot Password?</a>
-                            </div>
-                            <button type="submit" class="w-full btn-primary">Log In</button>
-                            <p id="login-error" class="text-red-500 text-sm text-center h-4"></p>
-                            <p class="text-center text-sm">Don't Have An Account? <a href="#" id="show-signup" class="text-blue-600 font-semibold hover:underline">Sign Up</a></p>
-                            <div class="flex items-center my-4"><hr class="flex-grow border-gray-300"><span class="mx-4 text-gray-400">or continue with</span><hr class="flex-grow border-gray-300"></div>
-                            <button type="button" id="google-login-btn" class="w-full flex justify-center py-2"><img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" class="h-10"></button>
-                        </form>
-                    </div>
-                    <!-- Signup Form -->
-                    <div id="signup-form-container" class="hidden">
-                         <h2 class="text-4xl font-bold">Sign Up</h2>
-                        <p class="text-gray-500 mt-2 mb-6">Create Your Account In Seconds</p>
-                        <form id="signup-form" class="space-y-4">
-                            <input id="signup-name" type="text" class="form-input w-full" placeholder="Full Name" required>
-                            <input id="signup-email" type="email" class="form-input w-full" placeholder="Email Address" required>
-                            <input id="signup-password" type="password" class="form-input w-full" placeholder="Password" required>
-                            <button type="submit" class="w-full btn-primary">Sign Up</button>
-                            <p id="signup-error" class="text-red-500 text-sm text-center h-4"></p>
-                            <p class="text-center text-sm">Already Have An Account? <a href="#" id="show-login" class="text-blue-600 font-semibold hover:underline">Log In</a></p>
-                            <div class="flex items-center my-4"><hr class="flex-grow border-gray-300"><span class="mx-4 text-gray-400">or continue with</span><hr class="flex-grow border-gray-300"></div>
-                            <button type="button" id="google-signup-btn" class="w-full flex justify-center py-2"><img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" class="h-10"></button>
-                        </form>
-                    </div>
-                </div>
-            </div>
-
             <!-- Setup Screen -->
-            <div id="setupScreen" class="screen hidden glass-card p-8 space-y-6">
+            <div id="setupScreen" class="screen glass-card p-8 space-y-6">
                 <div class="text-center">
                     <h1 class="text-4xl font-extrabold text-white" data-lang-key="main_title">AI Interview Coach</h1>
                     <p class="text-gray-400 mt-2" data-lang-key="tagline">Apne dream job ke liye practice karein.</p>
@@ -271,27 +245,12 @@
         </div>
     </main>
 
-    <footer id="main-footer" class="w-full text-center p-4 text-gray-500 text-sm hidden">
+    <footer class="w-full text-center p-4 text-gray-500 text-sm">
         <p>&copy; 2024 AI Interview Coach. All Rights Reserved.</p>
     </footer>
 
     <script>
         // --- DOM Elements ---
-        const mainHeader = document.getElementById('main-header');
-        const mainFooter = document.getElementById('main-footer');
-        const authScreen = document.getElementById('authScreen');
-        const loginFormContainer = document.getElementById('login-form-container');
-        const signupFormContainer = document.getElementById('signup-form-container');
-        const loginForm = document.getElementById('login-form');
-        const signupForm = document.getElementById('signup-form');
-        const showSignupLink = document.getElementById('show-signup');
-        const showLoginLink = document.getElementById('show-login');
-        const googleLoginBtn = document.getElementById('google-login-btn');
-        const googleSignupBtn = document.getElementById('google-signup-btn');
-        const forgotPasswordLink = document.getElementById('forgot-password-link');
-        const loginError = document.getElementById('login-error');
-        const signupError = document.getElementById('signup-error');
-
         const drawer = document.getElementById('drawer');
         const drawerBackdrop = document.getElementById('drawer-backdrop');
         const drawerContent = document.getElementById('drawer-content');
@@ -344,8 +303,6 @@
             document.querySelectorAll('.screen').forEach(screen => {
                 screen.classList.toggle('hidden', screen.id !== screenId);
             });
-            mainHeader.classList.toggle('hidden', screenId === 'authScreen');
-            mainFooter.classList.toggle('hidden', screenId === 'authScreen');
         }
 
         function setLanguage(lang) {
@@ -670,12 +627,12 @@
         languageSelector.addEventListener('change', (e) => setLanguage(e.target.value));
         
         startInterviewBtn.addEventListener('click', () => {
-            const user = window.netlifyIdentity ? netlifyIdentity.currentUser() : null;
+            const user = window.netlifyIdentity ? netlifyIdentity.currentUser() : true;
             if (user) {
                 startInterview();
             } else {
                 loginAndStart = true;
-                showScreen('authScreen');
+                netlifyIdentity.open();
             }
         });
 
@@ -730,7 +687,18 @@
                         netlifyIdentity.logout();
                     });
                 } else {
-                    drawerContent.innerHTML = ``; // Drawer is empty when logged out
+                    drawerContent.innerHTML = `
+                        <div class="text-center flex-grow">
+                            <h2 class="text-xl font-bold">Welcome</h2>
+                            <p class="text-sm text-gray-400 mb-6">Login to start your practice.</p>
+                            <button id="loginBtnDrawer" class="w-full btn-primary">Login with Google</button>
+                            ${historyHTML}
+                        </div>
+                         <div class="text-center text-xs text-gray-500 mt-4">
+                            Version 1.0.1
+                        </div>
+                    `;
+                    document.getElementById('loginBtnDrawer').addEventListener('click', () => netlifyIdentity.open());
                 }
 
                 if (history.length > 0) {
@@ -745,69 +713,22 @@
 
             netlifyIdentity.on('init', user => {
                 updateUserUI(user);
-                showScreen(user ? 'setupScreen' : 'authScreen');
+                showScreen('setupScreen');
             });
 
             netlifyIdentity.on('login', user => {
+                netlifyIdentity.close();
                 updateUserUI(user);
-                showScreen('setupScreen');
+                if (loginAndStart) {
+                    loginAndStart = false;
+                    startInterview();
+                }
             });
 
             netlifyIdentity.on('logout', () => {
                 updateUserUI(null);
                 resetApp();
-                showScreen('authScreen');
-            });
-
-            // Custom Form Listeners
-            showSignupLink.addEventListener('click', (e) => {
-                e.preventDefault();
-                loginFormContainer.classList.add('hidden');
-                signupFormContainer.classList.remove('hidden');
-            });
-
-            showLoginLink.addEventListener('click', (e) => {
-                e.preventDefault();
-                signupFormContainer.classList.add('hidden');
-                loginFormContainer.classList.remove('hidden');
-            });
-
-            googleLoginBtn.addEventListener('click', () => netlifyIdentity.open('google'));
-            googleSignupBtn.addEventListener('click', () => netlifyIdentity.open('google'));
-
-            loginForm.addEventListener('submit', (e) => {
-                e.preventDefault();
-                loginError.textContent = '';
-                const email = document.getElementById('login-email').value;
-                const password = document.getElementById('login-password').value;
-                netlifyIdentity.login(email, password, true).catch(err => {
-                    loginError.textContent = err.message || "Login failed. Please check your credentials.";
-                });
-            });
-
-            signupForm.addEventListener('submit', (e) => {
-                e.preventDefault();
-                signupError.textContent = '';
-                const name = document.getElementById('signup-name').value;
-                const email = document.getElementById('signup-email').value;
-                const password = document.getElementById('signup-password').value;
-                netlifyIdentity.signup(email, password, { full_name: name }).catch(err => {
-                    signupError.textContent = err.message || "Signup failed. Please try again.";
-                });
-            });
-            
-            forgotPasswordLink.addEventListener('click', (e) => {
-                e.preventDefault();
-                const email = document.getElementById('login-email').value;
-                if (!email) {
-                    loginError.textContent = 'Please enter your email to recover password.';
-                    return;
-                }
-                netlifyIdentity.requestPasswordRecovery(email).then(() => {
-                    loginError.textContent = `Recovery email sent to ${email}.`;
-                }).catch(err => {
-                    loginError.textContent = err.message || "Failed to send recovery email.";
-                });
+                showScreen('setupScreen');
             });
         }
 
@@ -818,9 +739,9 @@
                 speechSynthesis.onvoiceschanged = setupSpeechSynthesis;
              }
              updateStatus('status_waiting', 'waiting');
+             showScreen('setupScreen');
              if (!window.netlifyIdentity) {
                 profileIconBtn.classList.add('hidden');
-                showScreen('setupScreen');
              }
         });
 
