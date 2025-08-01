@@ -670,13 +670,7 @@
         languageSelector.addEventListener('change', (e) => setLanguage(e.target.value));
         
         startInterviewBtn.addEventListener('click', () => {
-            const user = window.netlifyIdentity ? netlifyIdentity.currentUser() : true;
-            if (user) {
-                startInterview();
-            } else {
-                loginAndStart = true;
-                netlifyIdentity.open();
-            }
+            startInterview();
         });
 
         endInterviewBtn.addEventListener('click', endInterview);
@@ -730,18 +724,7 @@
                         netlifyIdentity.logout();
                     });
                 } else {
-                    drawerContent.innerHTML = `
-                        <div class="text-center flex-grow">
-                            <h2 class="text-xl font-bold">Welcome</h2>
-                            <p class="text-sm text-gray-400 mb-6">Login to start your practice.</p>
-                            <button id="loginBtnDrawer" class="w-full btn-primary">Login with Google</button>
-                            ${historyHTML}
-                        </div>
-                         <div class="text-center text-xs text-gray-500 mt-4">
-                            Version 1.0.1
-                        </div>
-                    `;
-                    document.getElementById('loginBtnDrawer').addEventListener('click', () => netlifyIdentity.open());
+                    drawerContent.innerHTML = ``; // Drawer is empty when logged out
                 }
 
                 if (history.length > 0) {
@@ -755,23 +738,74 @@
             }
 
             netlifyIdentity.on('init', user => {
-                updateUserUI(user);
-                showScreen('setupScreen');
+                if (user) {
+                    updateUserUI(user);
+                    showScreen('setupScreen');
+                } else {
+                    showScreen('authScreen');
+                }
             });
 
             netlifyIdentity.on('login', user => {
-                netlifyIdentity.close();
                 updateUserUI(user);
-                if (loginAndStart) {
-                    loginAndStart = false;
-                    startInterview();
-                }
+                showScreen('setupScreen');
             });
 
             netlifyIdentity.on('logout', () => {
                 updateUserUI(null);
                 resetApp();
-                showScreen('setupScreen');
+                showScreen('authScreen');
+            });
+
+            // Custom Form Listeners
+            showSignupLink.addEventListener('click', (e) => {
+                e.preventDefault();
+                loginFormContainer.classList.add('hidden');
+                signupFormContainer.classList.remove('hidden');
+            });
+
+            showLoginLink.addEventListener('click', (e) => {
+                e.preventDefault();
+                signupFormContainer.classList.add('hidden');
+                loginFormContainer.classList.remove('hidden');
+            });
+
+            googleLoginBtn.addEventListener('click', () => netlifyIdentity.open('google'));
+            googleSignupBtn.addEventListener('click', () => netlifyIdentity.open('google'));
+
+            loginForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+                loginError.textContent = '';
+                const email = document.getElementById('login-email').value;
+                const password = document.getElementById('login-password').value;
+                netlifyIdentity.login(email, password, true).catch(err => {
+                    loginError.textContent = err.message || "Login failed. Please check your credentials.";
+                });
+            });
+
+            signupForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+                signupError.textContent = '';
+                const name = document.getElementById('signup-name').value;
+                const email = document.getElementById('signup-email').value;
+                const password = document.getElementById('signup-password').value;
+                netlifyIdentity.signup(email, password, { full_name: name }).catch(err => {
+                    signupError.textContent = err.message || "Signup failed. Please try again.";
+                });
+            });
+            
+            forgotPasswordLink.addEventListener('click', (e) => {
+                e.preventDefault();
+                const email = document.getElementById('login-email').value;
+                if (!email) {
+                    loginError.textContent = 'Please enter your email to recover password.';
+                    return;
+                }
+                netlifyIdentity.requestPasswordRecovery(email).then(() => {
+                    loginError.textContent = `Recovery email sent to ${email}.`;
+                }).catch(err => {
+                    loginError.textContent = err.message || "Failed to send recovery email.";
+                });
             });
         }
 
@@ -782,9 +816,9 @@
                 speechSynthesis.onvoiceschanged = setupSpeechSynthesis;
              }
              updateStatus('status_waiting', 'waiting');
-             showScreen('setupScreen');
              if (!window.netlifyIdentity) {
                 profileIconBtn.classList.add('hidden');
+                showScreen('setupScreen');
              }
         });
 
