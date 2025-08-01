@@ -158,6 +158,38 @@
 <body class="flex flex-col min-h-screen">
     <div id="background-gradient"></div>
 
+    <!-- Features Modal -->
+    <div id="featuresModal" class="fixed inset-0 bg-black/60 z-50 hidden items-center justify-center p-4">
+        <div class="glass-card w-full max-w-2xl p-8 relative">
+            <button id="closeFeaturesModalBtn" class="absolute top-4 right-4 text-gray-400 hover:text-white transition-colors">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
+            </button>
+            <h3 class="text-2xl font-bold mb-6 text-center text-white">Features & Updates</h3>
+            <div class="space-y-4 text-gray-300 max-h-[70vh] overflow-y-auto pr-4">
+                <div>
+                    <h4 class="font-semibold text-lg text-blue-400">Real-Time AI Feedback</h4>
+                    <p>Get instant feedback on your answers, including suggestions for improvement and ideal responses, all powered by advanced AI.</p>
+                </div>
+                <div>
+                    <h4 class="font-semibold text-lg text-blue-400">Multi-Language Support</h4>
+                    <p>Practice your interview in either English or Hinglish to get comfortable in the language of your choice.</p>
+                </div>
+                 <div>
+                    <h4 class="font-semibold text-lg text-blue-400">Personalized Experience</h4>
+                    <p>Tailor your mock interview by providing a specific job title and description. The AI will ask relevant questions based on the role.</p>
+                </div>
+                <div>
+                    <h4 class="font-semibold text-lg text-blue-400">[NEW] Complete UI Overhaul</h4>
+                    <p>We've launched a brand new, sleek user interface to make your practice sessions more engaging and intuitive.</p>
+                </div>
+                 <div>
+                    <h4 class="font-semibold text-lg text-blue-400">[NEW] Interview History</h4>
+                    <p>Login to save and review your past interview summaries. Track your progress over time!</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Confirmation Modal -->
     <div id="confirmModal" class="fixed inset-0 bg-black/60 z-50 hidden items-center justify-center p-4">
         <div class="bg-white rounded-lg p-6 w-full max-w-sm text-gray-900 shadow-xl">
@@ -180,10 +212,10 @@
 
     <!-- Main Header -->
     <header id="appHeader" class="w-full max-w-7xl mx-auto py-4 px-4 sm:px-6 lg:px-8 flex justify-between items-center text-white">
-        <h1 class="text-xl font-bold">Your Name</h1>
+        <h1 class="text-xl font-bold">Interview Moke-Ai</h1>
         <nav class="hidden md:flex items-center space-x-8">
             <a href="#" id="homeLink" class="text-gray-300 hover:text-white transition-colors">Home</a>
-            <a href="#" class="text-gray-300 hover:text-white transition-colors">Features</a>
+            <a href="#" id="featuresLink" class="text-gray-300 hover:text-white transition-colors">Features</a>
         </nav>
         <div id="header-auth-section">
             <!-- Login/Profile button will be injected here -->
@@ -340,6 +372,10 @@
         const drawerBackdrop = document.getElementById('drawer-backdrop');
         const drawerContent = document.getElementById('drawer-content');
         const headerAuthSection = document.getElementById('header-auth-section');
+
+        const featuresModal = document.getElementById('featuresModal');
+        const closeFeaturesModalBtn = document.getElementById('closeFeaturesModalBtn');
+        const featuresLink = document.getElementById('featuresLink');
 
         const homeScreen = document.getElementById('homeScreen');
         const setupScreen = document.getElementById('setupScreen');
@@ -897,6 +933,15 @@
         generateDescBtn.addEventListener('click', handleGenerateDescription);
         hintBtn.addEventListener('click', handleHint);
         drawerBackdrop.addEventListener('click', () => toggleDrawer(false));
+        featuresLink.addEventListener('click', (e) => {
+            e.preventDefault();
+            featuresModal.classList.remove('hidden');
+            featuresModal.classList.add('flex');
+        });
+        closeFeaturesModalBtn.addEventListener('click', () => {
+             featuresModal.classList.add('hidden');
+            featuresModal.classList.remove('flex');
+        });
 
 
         window.addEventListener('load', () => {
