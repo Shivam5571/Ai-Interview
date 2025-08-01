@@ -35,10 +35,7 @@
             width: 100%;
         }
         .screen.hidden {
-            opacity: 0;
-            transform: translateY(20px);
-            pointer-events: none;
-            position: absolute;
+            display: none; /* Changed from opacity/transform to display for simplicity */
         }
         .glass-card {
             background: rgba(17, 24, 39, 0.75);
@@ -82,7 +79,6 @@
             border-color: #4f46e5;
             box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.5);
         }
-        /* Fix for browser autofill styles */
         input:-webkit-autofill,
         input:-webkit-autofill:hover, 
         input:-webkit-autofill:focus, 
@@ -100,33 +96,63 @@
         #summaryContent ul { list-style-type: disc; padding-left: 1.5rem; }
         #summaryContent .summary-block { background-color: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.1); padding: 1rem; border-radius: 1rem; margin-bottom: 1rem;}
         
-        /* --- NEW/UPDATED DRAWER STYLES --- */
+        /* --- DRAWER STYLES --- */
         #drawer {
             transition: transform 0.3s ease-in-out;
-        }
-        #drawer.open {
-            transform: translateX(0);
         }
         #drawer-backdrop {
             transition: opacity 0.3s ease-in-out;
         }
         #drawer-content {
-            padding: 0; /* Remove padding to allow full-height sections */
+            padding: 0;
         }
         .drawer-card {
             box-shadow: 0 -10px 20px -5px rgba(0,0,0,0.2);
             flex-grow: 1;
             overflow-y: auto;
         }
-        #interview-history-list li {
-            transition: background-color 0.2s;
-        }
         #interview-history-list li:hover {
-            background-color: #f3f4f6; /* Light gray hover for history items */
+            background-color: #f3f4f6;
         }
-        .delete-history-item {
-            flex-shrink: 0;
+
+        /* --- NEW HOME PAGE STYLES --- */
+        .header-login-btn {
+            border: 2px solid #3b82f6;
+            color: #e0e0e0;
+            padding: 0.5rem 1.5rem;
+            border-radius: 9999px;
+            font-weight: 500;
+            transition: all 0.2s ease;
         }
+        .header-login-btn:hover {
+            background-color: #3b82f6;
+            color: white;
+        }
+        .feature-item {
+            color: #9ca3af;
+            transition: color 0.2s ease;
+        }
+        .feature-item:hover {
+            color: #3b82f6;
+        }
+        .feature-item svg {
+            width: 4rem;
+            height: 4rem;
+            margin-bottom: 1rem;
+        }
+        .start-interview-home-btn {
+            border: 2px solid #3b82f6;
+            color: #e0e0e0;
+            padding: 0.75rem 2rem;
+            border-radius: 9999px;
+            font-weight: 600;
+            transition: all 0.2s ease;
+        }
+        .start-interview-home-btn:hover {
+            background-color: #3b82f6;
+            color: white;
+        }
+
     </style>
 </head>
 <body class="flex flex-col min-h-screen">
@@ -144,32 +170,64 @@
         </div>
     </div>
 
-    <!-- Drawer Backdrop -->
-    <div id="drawer-backdrop" class="fixed inset-0 bg-black/50 z-30 hidden opacity-0"></div>
-
     <!-- Drawer -->
     <div id="drawer" class="fixed top-0 right-0 h-full w-80 bg-[#111827] shadow-2xl z-40 transform translate-x-full">
         <div id="drawer-content" class="flex flex-col h-full">
             <!-- Drawer content will be populated by JavaScript -->
         </div>
     </div>
+    <div id="drawer-backdrop" class="fixed inset-0 bg-black/50 z-30 hidden opacity-0"></div>
 
-    <header class="w-full max-w-5xl mx-auto py-4 px-4 flex justify-between items-center">
-        <h1 class="text-xl font-bold text-white">AI Interview Coach</h1>
-        <button id="profile-icon-btn" class="w-12 h-12 rounded-full bg-white/10 flex items-center justify-center border border-white/20 hover:bg-white/20 transition-colors">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>
-        </button>
+    <!-- Main Header -->
+    <header id="appHeader" class="w-full max-w-7xl mx-auto py-4 px-4 sm:px-6 lg:px-8 flex justify-between items-center text-white">
+        <h1 class="text-xl font-bold">Your Name</h1>
+        <nav class="hidden md:flex items-center space-x-8">
+            <a href="#" id="homeLink" class="text-gray-300 hover:text-white transition-colors">Home</a>
+            <a href="#" class="text-gray-300 hover:text-white transition-colors">Features</a>
+        </nav>
+        <div id="header-auth-section">
+            <!-- Login/Profile button will be injected here -->
+        </div>
     </header>
 
     <main class="flex-grow flex items-center justify-center p-4">
-        <div id="app" class="w-full max-w-3xl mx-auto relative">
-            <!-- Setup Screen -->
-            <div id="setupScreen" class="screen glass-card p-8 space-y-6">
-                <div class="text-center">
-                    <h1 class="text-4xl font-extrabold text-white" data-lang-key="main_title">AI Interview Coach</h1>
-                    <p class="text-gray-400 mt-2" data-lang-key="tagline">Apne dream job ke liye practice karein.</p>
+        <div id="app" class="w-full h-full flex items-center justify-center">
+            
+            <!-- Home Screen -->
+            <div id="homeScreen" class="screen w-full max-w-4xl mx-auto text-center">
+                <h2 class="text-4xl md:text-6xl font-extrabold text-white">Interview Mok-Ai:</h2>
+                <p class="text-2xl md:text-4xl font-semibold text-gray-300 mt-2">Crack You Next Interview With Confidence</p>
+                
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-8 md:gap-12 my-16">
+                    <div class="feature-item flex flex-col items-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6"><path stroke-linecap="round" stroke-linejoin="round" d="M12 18.75a6 6 0 006-6v-1.5m-6 7.5a6 6 0 01-6-6v-1.5m6 7.5v3.75m-3.75 0h7.5M12 15.75a3 3 0 01-3-3V4.5a3 3 0 016 0v8.25a3 3 0 01-3 3z" /></svg>
+                        <span class="font-semibold">Mock Interview</span>
+                    </div>
+                    <div class="feature-item flex flex-col items-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6"><path stroke-linecap="round" stroke-linejoin="round" d="M8.25 3v1.5M4.5 8.25H3m18 0h-1.5M4.5 12H3m18 0h-1.5m-15 3.75H3m18 0h-1.5M8.25 19.5V21M12 3v1.5m0 15V21m3.75-18v1.5m0 15V21m-9-1.5h10.5a2.25 2.25 0 002.25-2.25V5.25a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v13.5a2.25 2.25 0 002.25 2.25z" /></svg>
+                         <span class="font-semibold">AI Feedback</span>
+                    </div>
+                    <div class="feature-item flex flex-col items-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6"><path stroke-linecap="round" stroke-linejoin="round" d="M15.59 14.37a6 6 0 01-5.84 7.38v-4.8m5.84-2.58a14.98 14.98 0 006.16-12.12A14.98 14.98 0 009.63 2.25a14.98 14.98 0 00-5.84 7.38m5.84 2.58v-4.8m0 4.8a6 6 0 01-3.36 5.23m3.36-5.23a6 6 0 013.36 5.23m0 0a6 6 0 01-5.84-7.38m5.84 7.38a14.98 14.98 0 00-3.36-5.23m-2.48 5.23a14.98 14.98 0 01-3.36-5.23m0 0a14.98 14.98 0 01-5.84-7.38" /></svg>
+                        <span class="font-semibold">HR + Tech Round</span>
+                    </div>
+                    <div class="feature-item flex flex-col items-center">
+                         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                        <span class="font-semibold">Real-Time Practice</span>
+                    </div>
                 </div>
-                <div class="space-y-4">
+
+                <button id="startInterviewHomeBtn" class="start-interview-home-btn">Start Interview</button>
+            </div>
+
+            <!-- Setup Screen -->
+            <div id="setupScreen" class="screen hidden w-full max-w-3xl mx-auto">
+                <div class="glass-card p-8 space-y-6">
+                    <div class="text-center">
+                        <h1 class="text-4xl font-extrabold text-white" data-lang-key="main_title">AI Interview Coach</h1>
+                        <p class="text-gray-400 mt-2" data-lang-key="tagline">Apne dream job ke liye practice karein.</p>
+                    </div>
+                    <div class="space-y-4">
                         <div>
                             <label for="languageSelector" class="block text-sm font-medium text-gray-300 mb-2" data-lang-key="select_language">Interview Language</label>
                             <select id="languageSelector" class="form-select w-full">
@@ -177,92 +235,97 @@
                                 <option value="hi">Hinglish</option>
                             </select>
                         </div>
-                    <div>
-                        <label for="jobTitle" class="block text-sm font-medium text-gray-300 mb-2" data-lang-key="job_title_label">Job Title</label>
-                        <input type="text" id="jobTitle" class="form-input w-full" placeholder="e.g., Senior Software Engineer">
-                    </div>
-                    <div>
-                        <div class="flex justify-between items-center mb-2">
-                            <label for="jobDescription" class="block text-sm font-medium text-gray-300" data-lang-key="job_desc_label">Job Description</label>
-                            <button id="generateDescBtn" class="text-sm text-indigo-400 hover:text-indigo-300 font-semibold" data-lang-key="generate_desc_btn">Generate Description ✨</button>
+                        <div>
+                            <label for="jobTitle" class="block text-sm font-medium text-gray-300 mb-2" data-lang-key="job_title_label">Job Title</label>
+                            <input type="text" id="jobTitle" class="form-input w-full" placeholder="e.g., Senior Software Engineer">
                         </div>
-                        <textarea id="jobDescription" rows="6" class="form-textarea w-full" data-lang-key="job_desc_placeholder" placeholder="Yahan job description paste karein..."></textarea>
+                        <div>
+                            <div class="flex justify-between items-center mb-2">
+                                <label for="jobDescription" class="block text-sm font-medium text-gray-300" data-lang-key="job_desc_label">Job Description</label>
+                                <button id="generateDescBtn" class="text-sm text-indigo-400 hover:text-indigo-300 font-semibold" data-lang-key="generate_desc_btn">Generate Description ✨</button>
+                            </div>
+                            <textarea id="jobDescription" rows="6" class="form-textarea w-full" data-lang-key="job_desc_placeholder" placeholder="Yahan job description paste karein..."></textarea>
+                        </div>
+                        <div>
+                            <label for="difficulty" class="block text-sm font-medium text-gray-300 mb-2" data-lang-key="difficulty_label">Difficulty Level</label>
+                            <select id="difficulty" class="form-select w-full">
+                                <option value="Easy" data-lang-key="difficulty_easy">Easy</option>
+                                <option value="Medium" selected data-lang-key="difficulty_medium">Medium</option>
+                                <option value="Hard" data-lang-key="difficulty_hard">Hard</option>
+                            </select>
+                        </div>
                     </div>
-                    <div>
-                        <label for="difficulty" class="block text-sm font-medium text-gray-300 mb-2" data-lang-key="difficulty_label">Difficulty Level</label>
-                        <select id="difficulty" class="form-select w-full">
-                            <option value="Easy" data-lang-key="difficulty_easy">Easy</option>
-                            <option value="Medium" selected data-lang-key="difficulty_medium">Medium</option>
-                            <option value="Hard" data-lang-key="difficulty_hard">Hard</option>
-                        </select>
-                    </div>
+                    <button id="startInterviewBtn" class="w-full btn-primary" data-lang-key="start_btn">
+                        Practice Shuru Karein
+                    </button>
                 </div>
-                <button id="startInterviewBtn" class="w-full btn-primary" data-lang-key="start_btn">
-                    Practice Shuru Karein
-                </button>
             </div>
 
             <!-- Interview Screen -->
-            <div id="interviewScreen" class="screen hidden glass-card p-8 space-y-6">
-                 <div class="text-center mb-4">
-                    <h1 id="interviewTitle" class="text-2xl font-bold text-white" data-lang-key="interview_in_progress">Interview in Progress...</h1>
-                </div>
-                
-                <div class="flex items-start space-x-4">
-                    <div class="flex-shrink-0 w-10 h-10 rounded-full bg-indigo-500 flex items-center justify-center font-bold">AI</div>
-                    <div class="bg-black/20 p-4 rounded-xl shadow-lg border border-white/10 flex-1">
-                        <p class="text-indigo-400 text-sm font-semibold mb-2" data-lang-key="ai_question_label">AI COACH</p>
-                        <p id="aiQuestion" class="text-lg text-white font-medium min-h-[56px]">Coach interview shuru karne ke liye taiyaar ho raha hai...</p>
+            <div id="interviewScreen" class="screen hidden w-full max-w-3xl mx-auto">
+                <div class="glass-card p-8 space-y-6">
+                     <div class="text-center mb-4">
+                        <h1 id="interviewTitle" class="text-2xl font-bold text-white" data-lang-key="interview_in_progress">Interview in Progress...</h1>
                     </div>
-                </div>
-
-                <div id="statusIndicator" class="flex items-center justify-center space-x-3 bg-black/20 p-3 rounded-full mx-auto w-fit">
-                    <div id="statusIconContainer"></div>
-                    <span id="statusText" class="text-gray-300 font-medium" data-lang-key="status_waiting">Waiting to start...</span>
-                </div>
-
-                <div class="flex items-start space-x-4">
-                    <div class="flex-shrink-0 w-10 h-10 rounded-full bg-gray-600 flex items-center justify-center">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>
+                    
+                    <div class="flex items-start space-x-4">
+                        <div class="flex-shrink-0 w-10 h-10 rounded-full bg-indigo-500 flex items-center justify-center font-bold">AI</div>
+                        <div class="bg-black/20 p-4 rounded-xl shadow-lg border border-white/10 flex-1">
+                            <p class="text-indigo-400 text-sm font-semibold mb-2" data-lang-key="ai_question_label">AI COACH</p>
+                            <p id="aiQuestion" class="text-lg text-white font-medium min-h-[56px]">Coach interview shuru karne ke liye taiyaar ho raha hai...</p>
+                        </div>
                     </div>
-                    <div id="transcriptContainer" class="bg-black/20 p-4 rounded-xl border border-white/10 min-h-[80px] flex-1">
-                          <p class="text-gray-400 text-sm font-semibold mb-2" data-lang-key="your_answer_label">AAPKA JAWAB</p>
-                          <p id="userTranscript" class="text-gray-200 italic" data-lang-key="transcript_placeholder">Yahan aapka bola hua jawab dikhega...</p>
-                    </div>
-                </div>
 
-                <div id="feedbackContainer" class="hidden bg-indigo-500/10 p-4 rounded-xl border border-indigo-500/30">
-                    <p class="text-indigo-300 text-sm font-semibold mb-2" data-lang-key="feedback_label">AI Coach ka Feedback:</p>
-                    <p id="aiFeedback" class="text-indigo-200"></p>
-                </div>
-                <div class="flex space-x-4 pt-4">
-                    <button id="hintBtn" class="w-full btn-secondary text-white font-bold py-3 px-4 rounded-lg" data-lang-key="hint_btn">Hint Chahiye ✨</button>
-                    <button id="endInterviewBtn" class="w-full bg-red-600 hover:bg-red-700 text-white font-bold py-3 px-4 rounded-lg transition-colors">
-                        Interview End Karein
-                    </button>
+                    <div id="statusIndicator" class="flex items-center justify-center space-x-3 bg-black/20 p-3 rounded-full mx-auto w-fit">
+                        <div id="statusIconContainer"></div>
+                        <span id="statusText" class="text-gray-300 font-medium" data-lang-key="status_waiting">Waiting to start...</span>
+                    </div>
+
+                    <div class="flex items-start space-x-4">
+                        <div class="flex-shrink-0 w-10 h-10 rounded-full bg-gray-600 flex items-center justify-center">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>
+                        </div>
+                        <div id="transcriptContainer" class="bg-black/20 p-4 rounded-xl border border-white/10 min-h-[80px] flex-1">
+                              <p class="text-gray-400 text-sm font-semibold mb-2" data-lang-key="your_answer_label">AAPKA JAWAB</p>
+                              <p id="userTranscript" class="text-gray-200 italic" data-lang-key="transcript_placeholder">Yahan aapka bola hua jawab dikhega...</p>
+                        </div>
+                    </div>
+
+                    <div id="feedbackContainer" class="hidden bg-indigo-500/10 p-4 rounded-xl border border-indigo-500/30">
+                        <p class="text-indigo-300 text-sm font-semibold mb-2" data-lang-key="feedback_label">AI Coach ka Feedback:</p>
+                        <p id="aiFeedback" class="text-indigo-200"></p>
+                    </div>
+                    <div class="flex space-x-4 pt-4">
+                        <button id="hintBtn" class="w-full btn-secondary text-white font-bold py-3 px-4 rounded-lg" data-lang-key="hint_btn">Hint Chahiye ✨</button>
+                        <button id="endInterviewBtn" class="w-full bg-red-600 hover:bg-red-700 text-white font-bold py-3 px-4 rounded-lg transition-colors">
+                            Interview End Karein
+                        </button>
+                    </div>
                 </div>
             </div>
             
             <!-- Summary Screen -->
-            <div id="summaryScreen" class="screen hidden glass-card p-8 space-y-6">
-                <div class="text-center">
-                    <h1 class="text-3xl font-bold text-white" data-lang-key="summary_title">Interview Summary Report</h1>
-                    <div id="status-display-container" class="mt-4">
-                        <!-- Status will be injected here -->
+            <div id="summaryScreen" class="screen hidden w-full max-w-3xl mx-auto">
+                <div class="glass-card p-8 space-y-6">
+                    <div class="text-center">
+                        <h1 class="text-3xl font-bold text-white" data-lang-key="summary_title">Interview Summary Report</h1>
+                        <div id="status-display-container" class="mt-4">
+                            <!-- Status will be injected here -->
+                        </div>
+                        <p class="text-gray-400 mt-2" data-lang-key="summary_tagline">Aapke performance ka detailed analysis.</p>
                     </div>
-                    <p class="text-gray-400 mt-2" data-lang-key="summary_tagline">Aapke performance ka detailed analysis.</p>
-                </div>
-                <div id="summaryContent" class="bg-black/20 p-6 rounded-xl space-y-4 border border-white/10">
-                    <div id="summaryPlaceholder" class="flex justify-center items-center h-40">
-                        <svg class="animate-spin h-8 w-8 text-indigo-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                        </svg>
+                    <div id="summaryContent" class="bg-black/20 p-6 rounded-xl space-y-4 border border-white/10">
+                        <div id="summaryPlaceholder" class="flex justify-center items-center h-40">
+                            <svg class="animate-spin h-8 w-8 text-indigo-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                            </svg>
+                        </div>
                     </div>
+                    <button id="restartBtn" class="w-full btn-primary" data-lang-key="restart_btn">
+                        Naya Interview Start Karein
+                    </button>
                 </div>
-                <button id="restartBtn" class="w-full btn-primary" data-lang-key="restart_btn">
-                    Naya Interview Start Karein
-                </button>
             </div>
         </div>
     </main>
@@ -276,11 +339,17 @@
         const drawer = document.getElementById('drawer');
         const drawerBackdrop = document.getElementById('drawer-backdrop');
         const drawerContent = document.getElementById('drawer-content');
-        const profileIconBtn = document.getElementById('profile-icon-btn');
+        const headerAuthSection = document.getElementById('header-auth-section');
+
+        const homeScreen = document.getElementById('homeScreen');
         const setupScreen = document.getElementById('setupScreen');
         const interviewScreen = document.getElementById('interviewScreen');
         const summaryScreen = document.getElementById('summaryScreen');
+
+        const startInterviewHomeBtn = document.getElementById('startInterviewHomeBtn');
         const startInterviewBtn = document.getElementById('startInterviewBtn');
+        const homeLink = document.getElementById('homeLink');
+        
         const endInterviewBtn = document.getElementById('endInterviewBtn');
         const restartBtn = document.getElementById('restartBtn');
         const generateDescBtn = document.getElementById('generateDescBtn');
@@ -597,11 +666,11 @@
             updateStatus('status_listening', 'listening');
         }
 
-        function resetApp() {
+        function resetAppToHome() {
             isInterviewActive = false;
             isListening = false;
             window.speechSynthesis.cancel();
-            showScreen('setupScreen');
+            showScreen('homeScreen');
             conversationHistory = [];
             interviewLog = [];
             jobTitleInput.value = '';
@@ -623,23 +692,23 @@
             const history = getInterviewHistory();
             history.unshift(interviewData);
             localStorage.setItem(`interviewHistory_${user.id}`, JSON.stringify(history));
-            updateUserUI(user); // Refresh drawer UI immediately
+            updateDrawerUI(user); // Refresh drawer UI immediately
         }
 
         function deleteInterviewFromHistory(index) {
             const user = netlifyIdentity.currentUser();
             if (!user) return;
             const history = getInterviewHistory();
-            history.splice(index, 1); // Remove the item at the given index
+            history.splice(index, 1);
             localStorage.setItem(`interviewHistory_${user.id}`, JSON.stringify(history));
-            updateUserUI(user); // Refresh the drawer UI
+            updateDrawerUI(user);
         }
 
         function clearInterviewHistory() {
             const user = netlifyIdentity.currentUser();
             if (!user) return;
             localStorage.removeItem(`interviewHistory_${user.id}`);
-            updateUserUI(user); // Refresh drawer
+            updateDrawerUI(user);
         }
 
         function showHistorySummary(index) {
@@ -650,7 +719,7 @@
                 displayInterviewStatus(record.status);
                 summaryPlaceholder.style.display = 'none';
                 summaryContent.innerHTML = record.summary;
-                toggleDrawer();
+                toggleDrawer(false);
             }
         }
 
@@ -667,7 +736,6 @@
             const close = () => {
                 modal.classList.add('hidden');
                 modal.classList.remove('flex');
-                // Clean up listeners by replacing the buttons
                 okBtn.replaceWith(okBtn.cloneNode(true));
                 cancelBtn.replaceWith(cancelBtn.cloneNode(true));
             };
@@ -679,153 +747,156 @@
             });
         }
 
-        // --- Event Listeners & Init ---
-        languageSelector.addEventListener('change', (e) => setLanguage(e.target.value));
-        
-        startInterviewBtn.addEventListener('click', () => {
-            const user = window.netlifyIdentity ? netlifyIdentity.currentUser() : true;
-            if (user) {
-                startInterview();
-            } else {
-                loginAndStart = true;
-                netlifyIdentity.open();
-            }
-        });
-
-        endInterviewBtn.addEventListener('click', endInterview);
-        restartBtn.addEventListener('click', () => resetApp());
-        generateDescBtn.addEventListener('click', handleGenerateDescription);
-        hintBtn.addEventListener('click', handleHint);
-        
-        // Drawer Logic
-        function toggleDrawer() {
-            const isOpen = !drawer.classList.contains('translate-x-full');
+        function toggleDrawer(force) {
+            const isOpen = force === undefined ? drawer.classList.contains('translate-x-full') : !force;
             drawer.classList.toggle('translate-x-full', isOpen);
             drawer.classList.toggle('translate-x-0', !isOpen);
             drawerBackdrop.classList.toggle('hidden', isOpen);
             drawerBackdrop.classList.toggle('opacity-0', isOpen);
             drawerBackdrop.classList.toggle('opacity-100', !isOpen);
         }
-        profileIconBtn.addEventListener('click', toggleDrawer);
-        drawerBackdrop.addEventListener('click', toggleDrawer);
 
-        // Netlify Identity Logic
-        if (window.netlifyIdentity) {
-            // --- THIS IS THE NEWLY DESIGNED DRAWER UI FUNCTION ---
-            function updateUserUI(user) {
-                if (user) {
-                    // --- START: Profile Picture Logic ---
-                    let profileImageHTML = '';
-                    const avatarUrl = user.user_metadata.avatar_url;
+        function updateDrawerUI(user) {
+            if (!user) {
+                drawerContent.innerHTML = '';
+                return;
+            }
+            
+            let profileImageHTML = '';
+            const avatarUrl = user.user_metadata.avatar_url;
 
-                    if (avatarUrl) {
-                        profileImageHTML = `<img src="${avatarUrl}" alt="${user.user_metadata.full_name || 'User'}'s profile picture" class="w-24 h-24 rounded-full border-4 border-white/20 shadow-lg object-cover">`;
-                    } else {
-                        profileImageHTML = `
-                            <div class="w-24 h-24 rounded-full bg-blue-500 flex items-center justify-center border-4 border-white/20 shadow-lg">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>
-                            </div>`;
-                    }
-                    // --- END: Profile Picture Logic ---
+            if (avatarUrl) {
+                profileImageHTML = `<img src="${avatarUrl}" alt="${user.user_metadata.full_name || 'User'}'s profile picture" class="w-24 h-24 rounded-full border-4 border-white/20 shadow-lg object-cover">`;
+            } else {
+                profileImageHTML = `
+                    <div class="w-24 h-24 rounded-full bg-blue-500 flex items-center justify-center border-4 border-white/20 shadow-lg">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>
+                    </div>`;
+            }
 
-                    const history = getInterviewHistory();
-                    let historyHTML = '';
-                    if (history.length > 0) {
-                        historyHTML = `
-                            <h3 class="font-bold text-gray-700 mb-3 text-lg">Previous Interviews</h3>
-                            <ul id="interview-history-list" class="space-y-2 text-sm max-h-[50vh] overflow-y-auto">
-                                ${history.map((item, index) => `
-                                    <li class="history-item p-3 rounded-lg border border-gray-200 flex justify-between items-center hover:bg-gray-50 cursor-pointer" data-history-index="${index}">
-                                        <div class="flex-grow mr-2">
-                                            <strong class="text-indigo-600">${item.title}</strong><br>
-                                            <span class="text-xs text-gray-500">${item.date}</span>
-                                        </div>
-                                        <button class="delete-history-item p-1 text-gray-400 hover:text-red-500 transition-colors" data-delete-index="${index}">
-                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
-                                        </button>
-                                    </li>
-                                `).join('')}
-                            </ul>
-                            <button id="clearHistoryBtn" class="w-full mt-4 text-xs text-red-500 hover:text-red-400 hover:underline">Clear All History</button>
-                        `;
-                    } else {
-                         historyHTML = '<p class="text-center text-gray-500 mt-8">No interview history found.</p>';
-                    }
+            const history = getInterviewHistory();
+            let historyHTML = '';
+            if (history.length > 0) {
+                historyHTML = `
+                    <h3 class="font-bold text-gray-700 mb-3 text-lg">Previous Interviews</h3>
+                    <ul id="interview-history-list" class="space-y-2 text-sm max-h-[50vh] overflow-y-auto">
+                        ${history.map((item, index) => `
+                            <li class="history-item p-3 rounded-lg border border-gray-200 flex justify-between items-center hover:bg-gray-50 cursor-pointer" data-history-index="${index}">
+                                <div class="flex-grow mr-2">
+                                    <strong class="text-indigo-600">${item.title}</strong><br>
+                                    <span class="text-xs text-gray-500">${item.date}</span>
+                                </div>
+                                <button class="delete-history-item p-1 text-gray-400 hover:text-red-500 transition-colors" data-delete-index="${index}">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+                                </button>
+                            </li>
+                        `).join('')}
+                    </ul>
+                    <button id="clearHistoryBtn" class="w-full mt-4 text-xs text-red-500 hover:text-red-400 hover:underline">Clear All History</button>
+                `;
+            } else {
+                 historyHTML = '<p class="text-center text-gray-500 mt-8">No interview history found.</p>';
+            }
 
-                    drawerContent.innerHTML = `
-                        <div class="drawer-profile flex flex-col items-center justify-center p-6 bg-[#111827] flex-shrink-0">
-                            ${profileImageHTML}
-                            <h2 class="text-xl font-bold mt-4 text-white">${user.user_metadata.full_name || 'User Name'}</h2>
-                        </div>
-                        <div class="drawer-card bg-white p-6 rounded-t-2xl -mt-4 text-gray-900 flex flex-col">
-                             <button id="logoutBtn" class="w-full bg-red-600 text-white font-bold py-3 rounded-lg hover:bg-red-700 transition-colors mb-6 shadow-md hover:shadow-lg">Logout</button>
-                             ${historyHTML}
-                        </div>
-                    `;
+            drawerContent.innerHTML = `
+                <div class="drawer-profile flex flex-col items-center justify-center p-6 bg-[#111827] flex-shrink-0">
+                    ${profileImageHTML}
+                    <h2 class="text-xl font-bold mt-4 text-white">${user.user_metadata.full_name || 'User Name'}</h2>
+                </div>
+                <div class="drawer-card bg-white p-6 rounded-t-2xl -mt-4 text-gray-900 flex flex-col">
+                     <button id="logoutBtn" class="w-full bg-red-600 text-white font-bold py-3 rounded-lg hover:bg-red-700 transition-colors mb-6 shadow-md hover:shadow-lg">Logout</button>
+                     ${historyHTML}
+                </div>
+            `;
+            
+            document.getElementById('logoutBtn').addEventListener('click', () => {
+                toggleDrawer(false);
+                netlifyIdentity.logout();
+            });
 
-                    // Attach event listeners
-                    document.getElementById('logoutBtn').addEventListener('click', () => {
-                        toggleDrawer();
-                        netlifyIdentity.logout();
+            if (history.length > 0) {
+                document.getElementById('clearHistoryBtn')?.addEventListener('click', () => {
+                    showConfirmation('Clear All History?', 'This will permanently delete all your interview records.', clearInterviewHistory);
+                });
+
+                document.querySelectorAll('#interview-history-list li').forEach(item => {
+                    item.addEventListener('click', (e) => {
+                        if (e.target.closest('.delete-history-item')) return;
+                        showHistorySummary(e.currentTarget.dataset.historyIndex);
                     });
+                });
 
-                    if (history.length > 0) {
-                        document.getElementById('clearHistoryBtn')?.addEventListener('click', () => {
-                            showConfirmation('Clear All History?', 'This will permanently delete all your interview records.', clearInterviewHistory);
-                        });
+                document.querySelectorAll('.delete-history-item').forEach(button => {
+                    button.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        const index = e.currentTarget.dataset.deleteIndex;
+                        showConfirmation('Delete Interview?', 'This interview record will be permanently deleted.', () => deleteInterviewFromHistory(index));
+                    });
+                });
+            }
+        }
+        
+        // --- Netlify Identity Logic ---
+        if (window.netlifyIdentity) {
+            function updateHeaderUI(user) {
+                if (user) {
+                    const avatarUrl = user.user_metadata.avatar_url;
+                    let profileBtnHTML = avatarUrl 
+                        ? `<img src="${avatarUrl}" class="w-10 h-10 rounded-full border-2 border-blue-400 object-cover">`
+                        : `<div class="w-10 h-10 rounded-full bg-blue-500 flex items-center justify-center"><svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg></div>`;
 
-                        document.querySelectorAll('#interview-history-list li').forEach(item => {
-                            item.addEventListener('click', (e) => {
-                                if (e.target.closest('.delete-history-item')) return;
-                                showHistorySummary(e.currentTarget.dataset.historyIndex);
-                            });
-                        });
-
-                        document.querySelectorAll('.delete-history-item').forEach(button => {
-                            button.addEventListener('click', (e) => {
-                                const index = e.currentTarget.dataset.deleteIndex;
-                                showConfirmation('Delete Interview?', 'This interview record will be permanently deleted.', () => deleteInterviewFromHistory(index));
-                            });
-                        });
-                    }
-
-                } else { // Logged out view
-                    drawerContent.innerHTML = `
-                        <div class="drawer-profile flex flex-col items-center justify-center p-6 bg-[#111827] flex-shrink-0">
-                             <div class="w-24 h-24 rounded-full bg-gray-600 flex items-center justify-center border-4 border-white/20 shadow-lg">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>
-                            </div>
-                             <h2 class="text-xl font-bold mt-4 text-white">Welcome</h2>
-                        </div>
-                        <div class="drawer-card bg-white p-6 rounded-t-2xl -mt-4 text-gray-900 flex flex-col justify-center">
-                            <p class="text-sm text-center text-gray-500 mb-4">Login to save your progress and view your interview history.</p>
-                            <button id="loginBtnDrawer" class="w-full bg-indigo-600 text-white font-bold py-3 rounded-lg hover:bg-indigo-700 transition-colors shadow-md hover:shadow-lg">Login with Google</button>
-                        </div>
-                    `;
-                    document.getElementById('loginBtnDrawer').addEventListener('click', () => netlifyIdentity.open());
+                    headerAuthSection.innerHTML = `<button id="profile-icon-btn">${profileBtnHTML}</button>`;
+                    document.getElementById('profile-icon-btn').addEventListener('click', () => toggleDrawer(true));
+                } else {
+                    headerAuthSection.innerHTML = `<button id="header-login-btn" class="header-login-btn">Login</button>`;
+                    document.getElementById('header-login-btn').addEventListener('click', () => netlifyIdentity.open());
                 }
             }
 
             netlifyIdentity.on('init', user => {
-                updateUserUI(user);
-                showScreen('setupScreen');
+                updateHeaderUI(user);
+                updateDrawerUI(user);
+                showScreen('homeScreen');
             });
 
             netlifyIdentity.on('login', user => {
                 netlifyIdentity.close();
-                updateUserUI(user);
+                updateHeaderUI(user);
+                updateDrawerUI(user);
                 if (loginAndStart) {
                     loginAndStart = false;
-                    startInterview();
+                    showScreen('setupScreen');
                 }
             });
 
             netlifyIdentity.on('logout', () => {
-                updateUserUI(null);
-                resetApp();
-                showScreen('setupScreen');
+                updateHeaderUI(null);
+                updateDrawerUI(null);
+                resetAppToHome();
             });
         }
+
+        // --- Event Listeners & Init ---
+        languageSelector.addEventListener('change', (e) => setLanguage(e.target.value));
+        startInterviewHomeBtn.addEventListener('click', () => {
+            const user = netlifyIdentity.currentUser();
+            if (user) {
+                showScreen('setupScreen');
+            } else {
+                loginAndStart = true;
+                netlifyIdentity.open();
+            }
+        });
+        startInterviewBtn.addEventListener('click', startInterview);
+        homeLink.addEventListener('click', (e) => {
+            e.preventDefault();
+            resetAppToHome();
+        });
+        endInterviewBtn.addEventListener('click', endInterview);
+        restartBtn.addEventListener('click', () => showScreen('setupScreen'));
+        generateDescBtn.addEventListener('click', handleGenerateDescription);
+        hintBtn.addEventListener('click', handleHint);
+        drawerBackdrop.addEventListener('click', () => toggleDrawer(false));
 
 
         window.addEventListener('load', () => {
@@ -834,9 +905,9 @@
                  speechSynthesis.onvoiceschanged = setupSpeechSynthesis;
              }
              updateStatus('status_waiting', 'waiting');
-             showScreen('setupScreen');
              if (!window.netlifyIdentity) {
-                 profileIconBtn.classList.add('hidden');
+                headerAuthSection.innerHTML = '';
+                showScreen('homeScreen');
              }
         });
 
