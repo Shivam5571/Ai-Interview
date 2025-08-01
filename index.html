@@ -100,30 +100,55 @@
         #summaryContent ul { list-style-type: disc; padding-left: 1.5rem; }
         #summaryContent .summary-block { background-color: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.1); padding: 1rem; border-radius: 1rem; margin-bottom: 1rem;}
         
-        /* Drawer Styles */
+        /* --- NEW/UPDATED DRAWER STYLES --- */
         #drawer {
             transition: transform 0.3s ease-in-out;
+        }
+        #drawer.open {
+            transform: translateX(0);
         }
         #drawer-backdrop {
             transition: opacity 0.3s ease-in-out;
         }
+        #drawer-content {
+            padding: 0; /* Remove padding to allow full-height sections */
+        }
+        .drawer-card {
+            box-shadow: 0 -10px 20px -5px rgba(0,0,0,0.2);
+            flex-grow: 1;
+            overflow-y: auto;
+        }
         #interview-history-list li {
-            cursor: pointer;
             transition: background-color 0.2s;
         }
         #interview-history-list li:hover {
-            background-color: #f3f4f6;
+            background-color: #f3f4f6; /* Light gray hover for history items */
+        }
+        .delete-history-item {
+            flex-shrink: 0;
         }
     </style>
 </head>
 <body class="flex flex-col min-h-screen">
     <div id="background-gradient"></div>
 
+    <!-- Confirmation Modal -->
+    <div id="confirmModal" class="fixed inset-0 bg-black/60 z-50 hidden items-center justify-center p-4">
+        <div class="bg-white rounded-lg p-6 w-full max-w-sm text-gray-900 shadow-xl">
+            <h3 id="confirmModalTitle" class="text-lg font-bold mb-4">Are you sure?</h3>
+            <p id="confirmModalText" class="text-sm mb-6">This action cannot be undone.</p>
+            <div class="flex justify-end space-x-4">
+                <button id="confirmCancelBtn" class="px-4 py-2 rounded-lg border hover:bg-gray-100 transition-colors">Cancel</button>
+                <button id="confirmOkBtn" class="px-4 py-2 rounded-lg bg-red-600 text-white hover:bg-red-700 transition-colors">Delete</button>
+            </div>
+        </div>
+    </div>
+
     <!-- Drawer Backdrop -->
-    <div id="drawer-backdrop" class="fixed inset-0 bg-black/60 z-30 opacity-0 hidden"></div>
+    <div id="drawer-backdrop" class="fixed inset-0 bg-black/50 z-30 hidden opacity-0"></div>
 
     <!-- Drawer -->
-    <div id="drawer" class="fixed top-0 right-0 h-full w-4/5 sm:w-96 z-40 transform translate-x-full shadow-2xl flex flex-col">
+    <div id="drawer" class="fixed top-0 right-0 h-full w-80 bg-[#111827] shadow-2xl z-40 transform translate-x-full">
         <div id="drawer-content" class="flex flex-col h-full">
             <!-- Drawer content will be populated by JavaScript -->
         </div>
@@ -145,13 +170,13 @@
                     <p class="text-gray-400 mt-2" data-lang-key="tagline">Apne dream job ke liye practice karein.</p>
                 </div>
                 <div class="space-y-4">
-                     <div>
-                        <label for="languageSelector" class="block text-sm font-medium text-gray-300 mb-2" data-lang-key="select_language">Interview Language</label>
-                        <select id="languageSelector" class="form-select w-full">
-                            <option value="en">English</option>
-                            <option value="hi">Hinglish</option>
-                        </select>
-                    </div>
+                        <div>
+                            <label for="languageSelector" class="block text-sm font-medium text-gray-300 mb-2" data-lang-key="select_language">Interview Language</label>
+                            <select id="languageSelector" class="form-select w-full">
+                                <option value="en">English</option>
+                                <option value="hi">Hinglish</option>
+                            </select>
+                        </div>
                     <div>
                         <label for="jobTitle" class="block text-sm font-medium text-gray-300 mb-2" data-lang-key="job_title_label">Job Title</label>
                         <input type="text" id="jobTitle" class="form-input w-full" placeholder="e.g., Senior Software Engineer">
@@ -201,8 +226,8 @@
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>
                     </div>
                     <div id="transcriptContainer" class="bg-black/20 p-4 rounded-xl border border-white/10 min-h-[80px] flex-1">
-                         <p class="text-gray-400 text-sm font-semibold mb-2" data-lang-key="your_answer_label">AAPKA JAWAB</p>
-                         <p id="userTranscript" class="text-gray-200 italic" data-lang-key="transcript_placeholder">Yahan aapka bola hua jawab dikhega...</p>
+                          <p class="text-gray-400 text-sm font-semibold mb-2" data-lang-key="your_answer_label">AAPKA JAWAB</p>
+                          <p id="userTranscript" class="text-gray-200 italic" data-lang-key="transcript_placeholder">Yahan aapka bola hua jawab dikhega...</p>
                     </div>
                 </div>
 
@@ -399,25 +424,25 @@
             if (purpose === 'description') statusKey = 'status_generating_desc';
             if (purpose === 'hint') statusKey = 'status_generating_hint';
             updateStatus(statusKey, 'thinking');
-       
+        
             try {
                 const response = await fetch('/.netlify/functions/gemini', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ history: history })
                 });
-       
+        
                 if (!response.ok) {
                     throw new Error(`API request failed with status ${response.status}`);
                 }
-       
+        
                 const result = await response.json();
-       
+        
                 if (result.candidates && result.candidates.length > 0) {
                     return result.candidates[0].content.parts[0].text;
                 }
                 throw new Error(result.error || "No response from AI.");
-       
+        
             } catch (error) {
                 console.error("API Error:", error);
                 speak(translations[currentLang].status_network_error, () => updateStatus('status_network_error', 'error'));
@@ -431,24 +456,24 @@
              const aiResponseText = await callGeminiAPI(conversationHistory, "interview");
              
              if(aiResponseText){
-                conversationHistory.push({ role: "model", parts: [{ text: aiResponseText }] });
-                const parts = aiResponseText.split('|||');
-                let feedback = "", idealAnswer = "", nextQuestion = "";
+                 conversationHistory.push({ role: "model", parts: [{ text: aiResponseText }] });
+                 const parts = aiResponseText.split('|||');
+                 let feedback = "", idealAnswer = "", nextQuestion = "";
 
-                if (parts.length === 3) {
-                    [feedback, idealAnswer, nextQuestion] = parts.map(p => p.trim());
-                    if(currentQuestion && userTranscript.textContent !== translations[currentLang].transcript_placeholder){
-                       interviewLog.push({ question: currentQuestion, userAnswer: userTranscript.textContent, feedback, idealAnswer });
-                    }
-                } else {
-                    nextQuestion = aiResponseText;
-                }
-                currentQuestion = nextQuestion;
-                if (feedback) {
-                    aiFeedback.textContent = feedback;
-                    feedbackContainer.classList.remove('hidden');
-                }
-                speak(nextQuestion, () => { if (isInterviewActive) startListening(); });
+                 if (parts.length === 3) {
+                     [feedback, idealAnswer, nextQuestion] = parts.map(p => p.trim());
+                     if(currentQuestion && userTranscript.textContent !== translations[currentLang].transcript_placeholder){
+                        interviewLog.push({ question: currentQuestion, userAnswer: userTranscript.textContent, feedback, idealAnswer });
+                     }
+                 } else {
+                     nextQuestion = aiResponseText;
+                 }
+                 currentQuestion = nextQuestion;
+                 if (feedback) {
+                     aiFeedback.textContent = feedback;
+                     feedbackContainer.classList.remove('hidden');
+                 }
+                 speak(nextQuestion, () => { if (isInterviewActive) startListening(); });
              }
         }
 
@@ -585,7 +610,7 @@
             updateStatus('status_waiting', 'waiting');
         }
 
-        // --- History Functions ---
+        // --- History & Drawer Functions ---
         function getInterviewHistory() {
             const user = netlifyIdentity.currentUser();
             if (!user) return [];
@@ -599,6 +624,15 @@
             history.unshift(interviewData);
             localStorage.setItem(`interviewHistory_${user.id}`, JSON.stringify(history));
             updateUserUI(user); // Refresh drawer UI immediately
+        }
+
+        function deleteInterviewFromHistory(index) {
+            const user = netlifyIdentity.currentUser();
+            if (!user) return;
+            const history = getInterviewHistory();
+            history.splice(index, 1); // Remove the item at the given index
+            localStorage.setItem(`interviewHistory_${user.id}`, JSON.stringify(history));
+            updateUserUI(user); // Refresh the drawer UI
         }
 
         function clearInterviewHistory() {
@@ -618,6 +652,31 @@
                 summaryContent.innerHTML = record.summary;
                 toggleDrawer();
             }
+        }
+
+        function showConfirmation(title, text, onConfirm) {
+            const modal = document.getElementById('confirmModal');
+            document.getElementById('confirmModalTitle').textContent = title;
+            document.getElementById('confirmModalText').textContent = text;
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+
+            const cancelBtn = document.getElementById('confirmCancelBtn');
+            const okBtn = document.getElementById('confirmOkBtn');
+
+            const close = () => {
+                modal.classList.add('hidden');
+                modal.classList.remove('flex');
+                // Clean up listeners by replacing the buttons
+                okBtn.replaceWith(okBtn.cloneNode(true));
+                cancelBtn.replaceWith(cancelBtn.cloneNode(true));
+            };
+
+            document.getElementById('confirmCancelBtn').addEventListener('click', close);
+            document.getElementById('confirmOkBtn').addEventListener('click', () => {
+                onConfirm();
+                close();
+            });
         }
 
         // --- Event Listeners & Init ---
@@ -640,71 +699,98 @@
         
         // Drawer Logic
         function toggleDrawer() {
-            drawer.classList.toggle('translate-x-full');
-            drawer.classList.toggle('translate-x-0');
-            drawerBackdrop.classList.toggle('hidden');
-            drawerBackdrop.classList.toggle('opacity-0');
-            drawerBackdrop.classList.toggle('opacity-100');
+            const isOpen = !drawer.classList.contains('translate-x-full');
+            drawer.classList.toggle('translate-x-full', isOpen);
+            drawer.classList.toggle('translate-x-0', !isOpen);
+            drawerBackdrop.classList.toggle('hidden', isOpen);
+            drawerBackdrop.classList.toggle('opacity-0', isOpen);
+            drawerBackdrop.classList.toggle('opacity-100', !isOpen);
         }
         profileIconBtn.addEventListener('click', toggleDrawer);
         drawerBackdrop.addEventListener('click', toggleDrawer);
 
         // Netlify Identity Logic
         if (window.netlifyIdentity) {
+            // --- THIS IS THE NEWLY DESIGNED DRAWER UI FUNCTION ---
             function updateUserUI(user) {
-                let historyHTML = '';
-                const history = getInterviewHistory();
-                
-                if (history.length > 0) {
-                    historyHTML = `
-                        <div class="border-t border-white/10 mt-4 pt-4">
-                            <h3 class="font-bold mb-2">Interview History</h3>
-                            <ul id="interview-history-list" class="space-y-2 text-sm max-h-60 overflow-y-auto">
-                                ${history.map((item, index) => `<li class="p-2 rounded-md" data-history-index="${index}"><strong class="text-indigo-400">${item.title}</strong><br><span class="text-xs text-gray-400">${item.date}</span></li>`).join('')}
-                            </ul>
-                            <button id="clearHistoryBtn" class="w-full mt-4 text-xs text-red-400 hover:text-red-300">Clear History</button>
-                        </div>
-                    `;
-                }
-
                 if (user) {
+                    const history = getInterviewHistory();
+                    let historyHTML = '';
+                    if (history.length > 0) {
+                        historyHTML = `
+                            <h3 class="font-bold text-gray-700 mb-3 text-lg">Previous Interviews</h3>
+                            <ul id="interview-history-list" class="space-y-2 text-sm max-h-[50vh] overflow-y-auto">
+                                ${history.map((item, index) => `
+                                    <li class="history-item p-3 rounded-lg border border-gray-200 flex justify-between items-center hover:bg-gray-50 cursor-pointer" data-history-index="${index}">
+                                        <div class="flex-grow mr-2">
+                                            <strong class="text-indigo-600">${item.title}</strong><br>
+                                            <span class="text-xs text-gray-500">${item.date}</span>
+                                        </div>
+                                        <button class="delete-history-item p-1 text-gray-400 hover:text-red-500 transition-colors" data-delete-index="${index}">
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+                                        </button>
+                                    </li>
+                                `).join('')}
+                            </ul>
+                            <button id="clearHistoryBtn" class="w-full mt-4 text-xs text-red-500 hover:text-red-400 hover:underline">Clear All History</button>
+                        `;
+                    } else {
+                         historyHTML = '<p class="text-center text-gray-500 mt-8">No interview history found.</p>';
+                    }
+
                     drawerContent.innerHTML = `
-                        <div class="text-center flex-grow">
-                            <h2 class="text-xl font-bold">${user.user_metadata.full_name || 'User'}</h2>
-                            <p class="text-sm text-gray-400">${user.email}</p>
-                            <button id="logoutBtn" class="w-full mt-6 bg-red-600/80 text-white py-2 rounded-lg hover:bg-red-600">Logout</button>
-                            ${historyHTML}
+                        <div class="drawer-profile flex flex-col items-center justify-center p-6 bg-[#111827] flex-shrink-0">
+                            <div class="w-24 h-24 rounded-full bg-blue-500 flex items-center justify-center border-4 border-white/20 shadow-lg">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>
+                            </div>
+                            <h2 class="text-xl font-bold mt-4 text-white">${user.user_metadata.full_name || 'User Name'}</h2>
                         </div>
-                        <div class="text-center text-xs text-gray-500 mt-4">
-                            Version 1.0.1
+                        <div class="drawer-card bg-white p-6 rounded-t-2xl -mt-4 text-gray-900 flex flex-col">
+                             <button id="logoutBtn" class="w-full bg-red-600 text-white font-bold py-3 rounded-lg hover:bg-red-700 transition-colors mb-6 shadow-md hover:shadow-lg">Logout</button>
+                             ${historyHTML}
                         </div>
                     `;
+
+                    // Attach event listeners
                     document.getElementById('logoutBtn').addEventListener('click', () => {
                         toggleDrawer();
                         netlifyIdentity.logout();
                     });
-                } else {
+
+                    if (history.length > 0) {
+                        document.getElementById('clearHistoryBtn')?.addEventListener('click', () => {
+                            showConfirmation('Clear All History?', 'This will permanently delete all your interview records.', clearInterviewHistory);
+                        });
+
+                        document.querySelectorAll('#interview-history-list li').forEach(item => {
+                            item.addEventListener('click', (e) => {
+                                if (e.target.closest('.delete-history-item')) return;
+                                showHistorySummary(e.currentTarget.dataset.historyIndex);
+                            });
+                        });
+
+                        document.querySelectorAll('.delete-history-item').forEach(button => {
+                            button.addEventListener('click', (e) => {
+                                const index = e.currentTarget.dataset.deleteIndex;
+                                showConfirmation('Delete Interview?', 'This interview record will be permanently deleted.', () => deleteInterviewFromHistory(index));
+                            });
+                        });
+                    }
+
+                } else { // Logged out view
                     drawerContent.innerHTML = `
-                        <div class="text-center flex-grow">
-                            <h2 class="text-xl font-bold">Welcome</h2>
-                            <p class="text-sm text-gray-400 mb-6">Login to start your practice.</p>
-                            <button id="loginBtnDrawer" class="w-full btn-primary">Login with Google</button>
-                            ${historyHTML}
+                        <div class="drawer-profile flex flex-col items-center justify-center p-6 bg-[#111827] flex-shrink-0">
+                             <div class="w-24 h-24 rounded-full bg-gray-600 flex items-center justify-center border-4 border-white/20 shadow-lg">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>
+                            </div>
+                             <h2 class="text-xl font-bold mt-4 text-white">Welcome</h2>
                         </div>
-                         <div class="text-center text-xs text-gray-500 mt-4">
-                            Version 1.0.1
+                        <div class="drawer-card bg-white p-6 rounded-t-2xl -mt-4 text-gray-900 flex flex-col justify-center">
+                            <p class="text-sm text-center text-gray-500 mb-4">Login to save your progress and view your interview history.</p>
+                            <button id="loginBtnDrawer" class="w-full bg-indigo-600 text-white font-bold py-3 rounded-lg hover:bg-indigo-700 transition-colors shadow-md hover:shadow-lg">Login with Google</button>
                         </div>
                     `;
                     document.getElementById('loginBtnDrawer').addEventListener('click', () => netlifyIdentity.open());
-                }
-
-                if (history.length > 0) {
-                    document.getElementById('clearHistoryBtn').addEventListener('click', clearInterviewHistory);
-                    document.querySelectorAll('#interview-history-list li').forEach(item => {
-                        item.addEventListener('click', (e) => {
-                            showHistorySummary(e.currentTarget.dataset.historyIndex);
-                        });
-                    });
                 }
             }
 
@@ -733,12 +819,12 @@
         window.addEventListener('load', () => {
              setLanguage(languageSelector.value);
              if ('speechSynthesis' in window) {
-                speechSynthesis.onvoiceschanged = setupSpeechSynthesis;
+                 speechSynthesis.onvoiceschanged = setupSpeechSynthesis;
              }
              updateStatus('status_waiting', 'waiting');
              showScreen('setupScreen');
              if (!window.netlifyIdentity) {
-                profileIconBtn.classList.add('hidden');
+                 profileIconBtn.classList.add('hidden');
              }
         });
 
@@ -752,8 +838,8 @@
                 clearTimeout(silenceTimeout);
                 silenceTimeout = setTimeout(() => {
                     if(isListening){
-                       stopListening();
-                       if(userTranscript.textContent && userTranscript.textContent !== '...') handleInterviewTurn(userTranscript.textContent);
+                        stopListening();
+                        if(userTranscript.textContent && userTranscript.textContent !== '...') handleInterviewTurn(userTranscript.textContent);
                     }
                 }, 2000);
             };
