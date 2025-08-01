@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Interview Moke-Ai</title>
+    <title>AI Interview Coach</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -24,10 +24,10 @@
             width: 100%;
             height: 100%;
             background-image: 
-                radial-gradient(at 10% 20%, hsla(224, 82%, 57%, 0.25) 0px, transparent 50%),
-                radial-gradient(at 90% 10%, hsla(283, 72%, 52%, 0.25) 0px, transparent 50%),
-                radial-gradient(at 20% 90%, hsla(333, 72%, 52%, 0.2) 0px, transparent 50%),
-                radial-gradient(at 80% 80%, hsla(173, 72%, 52%, 0.25) 0px, transparent 50%);
+                radial-gradient(at 20% 20%, hsla(224, 82%, 57%, 0.2) 0px, transparent 50%),
+                radial-gradient(at 80% 20%, hsla(283, 72%, 52%, 0.2) 0px, transparent 50%),
+                radial-gradient(at 20% 80%, hsla(333, 72%, 52%, 0.2) 0px, transparent 50%),
+                radial-gradient(at 80% 80%, hsla(173, 72%, 52%, 0.2) 0px, transparent 50%);
             z-index: -1;
         }
         .screen {
@@ -35,11 +35,11 @@
             width: 100%;
         }
         .screen.hidden {
-            display: none;
+            display: none; /* Changed from opacity/transform to display for simplicity */
         }
         .glass-card {
-            background: rgba(17, 24, 39, 0.8);
-            backdrop-filter: blur(25px);
+            background: rgba(17, 24, 39, 0.75);
+            backdrop-filter: blur(20px);
             border: 1px solid rgba(255, 255, 255, 0.1);
             border-radius: 1.5rem;
             box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
@@ -115,7 +115,7 @@
             background-color: #f3f4f6;
         }
 
-        /* --- HOME PAGE STYLES --- */
+        /* --- NEW HOME PAGE STYLES --- */
         .header-login-btn {
             border: 2px solid #3b82f6;
             color: #e0e0e0;
@@ -130,12 +130,10 @@
         }
         .feature-item {
             color: #9ca3af;
-            transition: all 0.3s ease;
-            transform: translateY(0);
+            transition: color 0.2s ease;
         }
         .feature-item:hover {
             color: #3b82f6;
-            transform: translateY(-5px);
         }
         .feature-item svg {
             width: 4rem;
@@ -154,103 +152,11 @@
             background-color: #3b82f6;
             color: white;
         }
-        
-        /* --- VIDEO INTERVIEW STYLES --- */
-        #interviewScreen {
-            display: grid;
-            grid-template-columns: 2fr 1fr;
-            grid-template-rows: auto 1fr;
-            gap: 1rem;
-            width: 100%;
-            max-width: 1200px;
-            height: 80vh;
-        }
-        .video-main {
-            grid-column: 1 / 2;
-            grid-row: 1 / 3;
-            background-color: #000;
-            border-radius: 1rem;
-            position: relative;
-            overflow: hidden;
-        }
-        .video-feed {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
-        .video-pip {
-            position: absolute;
-            top: 1rem;
-            right: 1rem;
-            width: 25%;
-            height: auto;
-            border-radius: 0.75rem;
-            border: 2px solid rgba(255,255,255,0.5);
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-        .video-pip:hover {
-            border-color: #3b82f6;
-        }
-        .video-controls {
-            position: absolute;
-            bottom: 1rem;
-            left: 50%;
-            transform: translateX(-50%);
-            display: flex;
-            gap: 1rem;
-            background: rgba(0,0,0,0.5);
-            padding: 0.75rem 1.5rem;
-            border-radius: 9999px;
-            backdrop-filter: blur(10px);
-        }
-        .control-btn {
-            background: rgba(255,255,255,0.2);
-            border-radius: 50%;
-            width: 3rem;
-            height: 3rem;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            transition: all 0.2s ease;
-        }
-        .control-btn:hover {
-            background: rgba(255,255,255,0.3);
-        }
-        .control-btn.active {
-            background: #3b82f6;
-        }
-        .control-btn.end-call {
-            background: #ef4444;
-        }
-        .sidebar {
-            grid-column: 2 / 3;
-            grid-row: 1 / 3;
-            display: flex;
-            flex-direction: column;
-            gap: 1rem;
-        }
-        .sidebar-card {
-            background: rgba(17, 24, 39, 0.8);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 1rem;
-            padding: 1rem;
-            display: flex;
-            flex-direction: column;
-        }
-        .transcript-box {
-            flex-grow: 1;
-            overflow-y: auto;
-            color: #d1d5db;
-        }
 
     </style>
 </head>
 <body class="flex flex-col min-h-screen">
     <div id="background-gradient"></div>
-    
-    <div id="notification" class="fixed top-5 right-5 bg-red-500 text-white p-4 rounded-lg shadow-lg z-50 hidden transition-opacity duration-300"></div>
 
     <!-- Features Modal -->
     <div id="featuresModal" class="fixed inset-0 bg-black/60 z-50 hidden items-center justify-center p-4">
@@ -259,7 +165,7 @@
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
             </button>
             <h3 class="text-2xl font-bold mb-6 text-center text-white">Features & Updates</h3>
-            <div class="space-y-6 text-gray-300 max-h-[70vh] overflow-y-auto pr-4">
+            <div class="space-y-4 text-gray-300 max-h-[70vh] overflow-y-auto pr-4">
                 <div>
                     <h4 class="font-semibold text-lg text-blue-400">Real-Time AI Feedback</h4>
                     <p>Get instant feedback on your answers, including suggestions for improvement and ideal responses, all powered by advanced AI.</p>
@@ -279,19 +185,6 @@
                  <div>
                     <h4 class="font-semibold text-lg text-blue-400">[NEW] Interview History</h4>
                     <p>Login to save and review your past interview summaries. Track your progress over time!</p>
-                </div>
-                 <div class="border-t border-gray-700 pt-4">
-                    <h4 class="font-semibold text-lg text-yellow-400">Latest Job Postings</h4>
-                    <p class="text-sm text-gray-500 mb-2">Stay updated with new opportunities.</p>
-                    <ul class="space-y-2">
-                        <li><a href="#" class="hover:text-yellow-300">Senior Frontend Developer - TechCorp</a></li>
-                        <li><a href="#" class="hover:text-yellow-300">Product Manager - Innovate Inc.</a></li>
-                        <li><a href="#" class="hover:text-yellow-300">Data Scientist - AnalyzeMe</a></li>
-                    </ul>
-                </div>
-                <div class="border-t border-gray-700 pt-4">
-                    <h4 class="font-semibold text-lg text-green-400">Coming Soon...</h4>
-                    <p>We are working on adding video interview practice and company-specific question banks. Stay tuned!</p>
                 </div>
             </div>
         </div>
@@ -329,13 +222,13 @@
         </div>
     </header>
 
-    <main class="flex-grow flex p-4">
+    <main class="flex-grow flex items-center justify-center p-4">
         <div id="app" class="w-full h-full flex items-center justify-center">
             
             <!-- Home Screen -->
-            <div id="homeScreen" class="screen hidden w-full max-w-4xl mx-auto text-center">
-                <h2 class="text-4xl md:text-6xl font-extrabold text-white">Interview Moke-Ai:</h2>
-                <p id="tagline-typing" class="text-2xl md:text-4xl font-semibold text-gray-300 mt-2 min-h-[3rem]">Crack Your Next Interview With Confidence</p>
+            <div id="homeScreen" class="screen w-full max-w-4xl mx-auto text-center">
+                <h2 class="text-4xl md:text-6xl font-extrabold text-white">Interview Mok-Ai:</h2>
+                <p class="text-2xl md:text-4xl font-semibold text-gray-300 mt-2">Crack You Next Interview With Confidence</p>
                 
                 <div class="grid grid-cols-2 md:grid-cols-4 gap-8 md:gap-12 my-16">
                     <div class="feature-item flex flex-col items-center">
@@ -363,7 +256,7 @@
             <div id="setupScreen" class="screen hidden w-full max-w-3xl mx-auto">
                 <div class="glass-card p-8 space-y-6">
                     <div class="text-center">
-                        <h1 class="text-4xl font-extrabold text-white" data-lang-key="main_title">Interview Setup</h1>
+                        <h1 class="text-4xl font-extrabold text-white" data-lang-key="main_title">AI Interview Coach</h1>
                         <p class="text-gray-400 mt-2" data-lang-key="tagline">Apne dream job ke liye practice karein.</p>
                     </div>
                     <div class="space-y-4">
@@ -395,62 +288,82 @@
                         </div>
                     </div>
                     <button id="startInterviewBtn" class="w-full btn-primary" data-lang-key="start_btn">
-                        Start Practice
+                        Practice Shuru Karein
                     </button>
                 </div>
             </div>
 
-            <!-- Video Interview Screen -->
-            <div id="interviewScreen" class="screen hidden">
-                <div class="video-main">
-                    <video id="aiVideo" class="video-feed" autoplay playsinline></video>
-                    <video id="userVideo" class="video-feed video-pip" autoplay playsinline muted></video>
-                    <div class="video-controls">
-                        <button id="micBtn" class="control-btn active">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z" /></svg>
-                        </button>
-                        <button id="cameraBtn" class="control-btn active">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.55a1.5 1.5 0 01.45 2.12l-3.5 6A1.5 1.5 0 0115 19H9a1.5 1.5 0 01-1.5-1.5V6.5A1.5 1.5 0 019 5h4.5a1.5 1.5 0 011.06.44L18 8m-9 6h6" /></svg>
-                        </button>
-                        <button id="endInterviewBtn" class="control-btn end-call">
-                             <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 8l2-2m0 0l2 2m-2-2v10a2 2 0 01-2 2H8a2 2 0 01-2-2V6m12 0h-4" /></svg>
-                        </button>
+            <!-- Interview Screen -->
+            <div id="interviewScreen" class="screen hidden w-full max-w-3xl mx-auto">
+                <div class="glass-card p-8 space-y-6">
+                     <div class="text-center mb-4">
+                        <h1 id="interviewTitle" class="text-2xl font-bold text-white" data-lang-key="interview_in_progress">Interview in Progress...</h1>
                     </div>
-                </div>
-                <div class="sidebar">
-                    <div class="sidebar-card flex-grow">
-                        <h3 class="font-bold text-lg mb-2 text-white">Interview Coach</h3>
-                        <div id="aiQuestion" class="transcript-box">AI Coach is preparing your first question...</div>
-                    </div>
-                    <div class="sidebar-card" style="flex-basis: 33%;">
-                        <div class="flex justify-between items-center mb-2">
-                            <h3 class="font-bold text-lg text-white">You</h3>
-                            <button id="hintBtn" class="text-sm text-blue-400 hover:text-blue-300">Hint</button>
+                    
+                    <div class="flex items-start space-x-4">
+                        <div class="flex-shrink-0 w-10 h-10 rounded-full bg-indigo-500 flex items-center justify-center font-bold">AI</div>
+                        <div class="bg-black/20 p-4 rounded-xl shadow-lg border border-white/10 flex-1">
+                            <p class="text-indigo-400 text-sm font-semibold mb-2" data-lang-key="ai_question_label">AI COACH</p>
+                            <p id="aiQuestion" class="text-lg text-white font-medium min-h-[56px]">Coach interview shuru karne ke liye taiyaar ho raha hai...</p>
                         </div>
-                        <div id="userTranscript" class="transcript-box">Your response will appear here...</div>
-                        <div id="hintArea" class="transcript-box text-blue-300 mt-2 hidden"></div>
+                    </div>
+
+                    <div id="statusIndicator" class="flex items-center justify-center space-x-3 bg-black/20 p-3 rounded-full mx-auto w-fit">
+                        <div id="statusIconContainer"></div>
+                        <span id="statusText" class="text-gray-300 font-medium" data-lang-key="status_waiting">Waiting to start...</span>
+                    </div>
+
+                    <div class="flex items-start space-x-4">
+                        <div class="flex-shrink-0 w-10 h-10 rounded-full bg-gray-600 flex items-center justify-center">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>
+                        </div>
+                        <div id="transcriptContainer" class="bg-black/20 p-4 rounded-xl border border-white/10 min-h-[80px] flex-1">
+                              <p class="text-gray-400 text-sm font-semibold mb-2" data-lang-key="your_answer_label">AAPKA JAWAB</p>
+                              <p id="userTranscript" class="text-gray-200 italic" data-lang-key="transcript_placeholder">Yahan aapka bola hua jawab dikhega...</p>
+                        </div>
+                    </div>
+
+                    <div id="feedbackContainer" class="hidden bg-indigo-500/10 p-4 rounded-xl border border-indigo-500/30">
+                        <p class="text-indigo-300 text-sm font-semibold mb-2" data-lang-key="feedback_label">AI Coach ka Feedback:</p>
+                        <p id="aiFeedback" class="text-indigo-200"></p>
+                    </div>
+                    <div class="flex space-x-4 pt-4">
+                        <button id="hintBtn" class="w-full btn-secondary text-white font-bold py-3 px-4 rounded-lg" data-lang-key="hint_btn">Hint Chahiye ✨</button>
+                        <button id="endInterviewBtn" class="w-full bg-red-600 hover:bg-red-700 text-white font-bold py-3 px-4 rounded-lg transition-colors">
+                            Interview End Karein
+                        </button>
                     </div>
                 </div>
             </div>
             
             <!-- Summary Screen -->
-            <div id="summaryScreen" class="screen hidden w-full max-w-5xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-8">
-                <div class="glass-card p-6">
-                    <h2 class="text-2xl font-bold mb-4">Interview Summary</h2>
-                    <div id="summaryContent" class="space-y-4 max-h-[60vh] overflow-y-auto pr-4">
-                        <!-- Summary will be loaded here -->
+            <div id="summaryScreen" class="screen hidden w-full max-w-3xl mx-auto">
+                <div class="glass-card p-8 space-y-6">
+                    <div class="text-center">
+                        <h1 class="text-3xl font-bold text-white" data-lang-key="summary_title">Interview Summary Report</h1>
+                        <div id="status-display-container" class="mt-4">
+                            <!-- Status will be injected here -->
+                        </div>
+                        <p class="text-gray-400 mt-2" data-lang-key="summary_tagline">Aapke performance ka detailed analysis.</p>
                     </div>
-                </div>
-                <div class="flex flex-col items-center justify-center">
-                     <p class="text-lg text-gray-300 mb-6">Ready for another round?</p>
-                    <button id="startNewInterviewBtn" class="start-interview-home-btn">Start New Interview</button>
+                    <div id="summaryContent" class="bg-black/20 p-6 rounded-xl space-y-4 border border-white/10">
+                        <div id="summaryPlaceholder" class="flex justify-center items-center h-40">
+                            <svg class="animate-spin h-8 w-8 text-indigo-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                            </svg>
+                        </div>
+                    </div>
+                    <button id="restartBtn" class="w-full btn-primary" data-lang-key="restart_btn">
+                        Naya Interview Start Karein
+                    </button>
                 </div>
             </div>
         </div>
     </main>
 
     <footer class="w-full text-center p-4 text-gray-500 text-sm">
-        <p>&copy; 2024 Interview Moke-Ai. All Rights Reserved.</p>
+        <p>&copy; 2024 AI Interview Coach. All Rights Reserved.</p>
     </footer>
 
     <script>
@@ -474,31 +387,28 @@
         const homeLink = document.getElementById('homeLink');
         
         const endInterviewBtn = document.getElementById('endInterviewBtn');
-        const startNewInterviewBtn = document.getElementById('startNewInterviewBtn');
+        const restartBtn = document.getElementById('restartBtn');
         const generateDescBtn = document.getElementById('generateDescBtn');
         const hintBtn = document.getElementById('hintBtn');
         const languageSelector = document.getElementById('languageSelector');
         const jobTitleInput = document.getElementById('jobTitle');
         const jobDescriptionInput = document.getElementById('jobDescription');
         const difficultyInput = document.getElementById('difficulty');
+        const interviewTitle = document.getElementById('interviewTitle');
         const aiQuestion = document.getElementById('aiQuestion');
+        const statusIconContainer = document.getElementById('statusIconContainer');
+        const statusText = document.getElementById('statusText');
         const userTranscript = document.getElementById('userTranscript');
-        const hintArea = document.getElementById('hintArea');
+        const feedbackContainer = document.getElementById('feedbackContainer');
+        const aiFeedback = document.getElementById('aiFeedback');
         const summaryContent = document.getElementById('summaryContent');
-        const taglineTypingElement = document.getElementById('tagline-typing');
-
-        // Video elements
-        const userVideo = document.getElementById('userVideo');
-        const aiVideo = document.getElementById('aiVideo');
-        const micBtn = document.getElementById('micBtn');
-        const cameraBtn = document.getElementById('cameraBtn');
+        const summaryPlaceholder = document.getElementById('summaryPlaceholder');
 
         // --- Speech Recognition & Synthesis ---
         const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
         const recognition = SpeechRecognition ? new SpeechRecognition() : null;
         let silenceTimeout;
         let englishVoice, hindiVoice;
-        let userStream;
 
         // --- State Management ---
         let conversationHistory = [];
@@ -509,35 +419,17 @@
         let currentLang = 'en';
         let loginAndStart = false; 
 
-        // --- Translations ---
+        // --- Translation Strings ---
         const translations = {
-            en: { main_title: "Interview Setup", tagline: "Practice for your dream job.", select_language: "Interview Language", job_title_label: "Job Title", job_desc_label: "Job Description", generate_desc_btn: "Generate Description ✨", job_desc_placeholder: "Paste job description here...", difficulty_label: "Difficulty Level", difficulty_easy: "Easy", difficulty_medium: "Medium", difficulty_hard: "Hard", start_btn: "Start Practice", interview_in_progress: "Interview in Progress...", ai_question_label: "AI COACH", your_answer_label: "YOUR RESPONSE", status_waiting: "Waiting to start...", transcript_placeholder: "Your spoken answer will appear here...", feedback_label: "AI Coach's Feedback:", hint_btn: "Give me a Hint ✨", end_btn: "End Interview", summary_title: "Interview Summary Report", summary_tagline: "A detailed analysis of your performance.", summary_generating: "Generating your report...", restart_btn: "Start New Interview", status_listening: "Listening... You can start speaking.", status_processing: "Processing your answer...", status_thinking: "AI Coach is thinking...", status_generating_desc: "Generating description...", status_generating_hint: "Preparing a hint...", status_ready: "Ready", status_mic_error: "Mic error. Please check your microphone.", status_network_error: "Network error. Please check your connection.", status_no_speech: "Didn't hear that. Could you please repeat?", alert_no_jd: "Please enter a job description to start.", alert_no_title_for_jd: "Please enter a job title to generate a description." },
-            hi: { main_title: "Interview Setup", tagline: "Apne dream job ke liye practice karein.", select_language: "Interview Language", job_title_label: "Job Title", job_desc_label: "Job Description", generate_desc_btn: "Description Generate Karein ✨", job_desc_placeholder: "Job description yahan paste karein...", difficulty_label: "Difficulty Level", difficulty_easy: "Easy", difficulty_medium: "Medium", difficulty_hard: "Hard", start_btn: "Practice Shuru Karein", interview_in_progress: "Interview chal raha hai...", ai_question_label: "AI COACH", your_answer_label: "AAPKA JAWAB", status_waiting: "Start hone ka wait hai...", transcript_placeholder: "Aapka bola hua jawab yahan dikhega...", feedback_label: "AI Coach ka Feedback:", hint_btn: "Hint Chahiye ✨", end_btn: "Interview End Karein", summary_title: "Interview Summary Report", summary_tagline: "Aapke performance ka detailed analysis.", summary_generating: "Aapki report generate ho rahi hai...", restart_btn: "Naya Interview Start Karein", status_listening: "Suna ja raha hai... Aap bol sakte hain.", status_processing: "Aapka answer process ho raha hai...", status_thinking: "AI Coach soch raha hai...", status_generating_desc: "Description generate ho rahi hai...", status_generating_hint: "Hint taiyaar ho raha hai...", status_ready: "Ready", status_mic_error: "Mic error. Please apna microphone check karein.", status_network_error: "Network error. Please apna connection check karein.", status_no_speech: "Kuch sunai nahi diya. Please repeat karein.", alert_no_jd: "Start karne ke liye please job description dalein.", alert_no_title_for_jd: "Description generate karne ke liye please job title dalein." }
+            en: { main_title: "AI Interview Coach", tagline: "Practice for your dream job.", select_language: "Interview Language", job_title_label: "Job Title", job_desc_label: "Job Description", generate_desc_btn: "Generate Description ✨", job_desc_placeholder: "Paste job description here...", difficulty_label: "Difficulty Level", difficulty_easy: "Easy", difficulty_medium: "Medium", difficulty_hard: "Hard", start_btn: "Start Practice", interview_in_progress: "Interview in Progress...", ai_question_label: "AI COACH", your_answer_label: "YOUR RESPONSE", status_waiting: "Waiting to start...", transcript_placeholder: "Your spoken answer will appear here...", feedback_label: "AI Coach's Feedback:", hint_btn: "Give me a Hint ✨", end_btn: "End Interview", summary_title: "Interview Summary Report", summary_tagline: "A detailed analysis of your performance.", summary_generating: "Generating your report...", restart_btn: "Start New Interview", status_listening: "Listening... You can start speaking.", status_processing: "Processing your answer...", status_thinking: "AI Coach is thinking...", status_generating_desc: "Generating description...", status_generating_hint: "Preparing a hint...", status_ready: "Ready", status_mic_error: "Mic error. Please check your microphone.", status_network_error: "Network error. Please check your connection.", status_no_speech: "Didn't hear that. Could you please repeat?", alert_no_jd: "Please enter a job description to start.", alert_no_title_for_jd: "Please enter a job title to generate a description." },
+            hi: { main_title: "AI Interview Coach", tagline: "Apne dream job ke liye practice karein.", select_language: "Interview Language", job_title_label: "Job Title", job_desc_label: "Job Description", generate_desc_btn: "Description Generate Karein ✨", job_desc_placeholder: "Job description yahan paste karein...", difficulty_label: "Difficulty Level", difficulty_easy: "Easy", difficulty_medium: "Medium", difficulty_hard: "Hard", start_btn: "Practice Shuru Karein", interview_in_progress: "Interview chal raha hai...", ai_question_label: "AI COACH", your_answer_label: "AAPKA JAWAB", status_waiting: "Start hone ka wait hai...", transcript_placeholder: "Aapka bola hua jawab yahan dikhega...", feedback_label: "AI Coach ka Feedback:", hint_btn: "Hint Chahiye ✨", end_btn: "Interview End Karein", summary_title: "Interview Summary Report", summary_tagline: "Aapke performance ka detailed analysis.", summary_generating: "Aapki report generate ho rahi hai...", restart_btn: "Naya Interview Start Karein", status_listening: "Suna ja raha hai... Aap bol sakte hain.", status_processing: "Aapka answer process ho raha hai...", status_thinking: "AI Coach soch raha hai...", status_generating_desc: "Description generate ho rahi hai...", status_generating_hint: "Hint taiyaar ho raha hai...", status_ready: "Ready", status_mic_error: "Mic error. Please apna microphone check karein.", status_network_error: "Network error. Please apna connection check karein.", status_no_speech: "Kuch sunai nahi diya. Please repeat karein.", alert_no_jd: "Start karne ke liye please job description dalein.", alert_no_title_for_jd: "Description generate karne ke liye please job title dalein." }
         };
 
         // --- UI Functions ---
         function showScreen(screenId) {
-            const app = document.getElementById('app');
             document.querySelectorAll('.screen').forEach(screen => {
                 screen.classList.toggle('hidden', screen.id !== screenId);
             });
-            // Adjust container alignment for different screens
-            if (screenId === 'interviewScreen' || screenId === 'summaryScreen') {
-                app.classList.remove('items-center', 'justify-center');
-            } else {
-                app.classList.add('items-center', 'justify-center');
-            }
-        }
-
-        function showNotification(message, isError = true) {
-            const notification = document.getElementById('notification');
-            notification.textContent = message;
-            notification.classList.toggle('bg-red-500', isError);
-            notification.classList.toggle('bg-green-500', !isError);
-            notification.classList.remove('hidden');
-            setTimeout(() => {
-                notification.classList.add('hidden');
-            }, 5000);
         }
 
         function setLanguage(lang) {
@@ -554,6 +446,42 @@
             });
         }
 
+        const icons = {
+            waiting: `<div class="w-3 h-3 bg-gray-500 rounded-full"></div>`,
+            listening: `<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-green-400 animate-pulse" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M7 4a3 3 0 016 0v4a3 3 0 11-6 0V4zm4 10.93A7.001 7.001 0 0017 8h-1a6 6 0 11-12 0H3a7.001 7.001 0 006 6.93V17H7a1 1 0 100 2h6a1 1 0 100-2h-2v-2.07z" clip-rule="evenodd" /></svg>`,
+            thinking: `<svg class="animate-spin h-5 w-5 text-indigo-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>`,
+            error: `<div class="w-3 h-3 bg-red-500 rounded-full"></div>`
+        };
+
+        function updateStatus(key, iconType) {
+            statusText.textContent = translations[currentLang][key] || key;
+            statusIconContainer.innerHTML = icons[iconType] || icons.waiting;
+        }
+        
+        function displayInterviewStatus(status) {
+            const container = document.getElementById('status-display-container');
+            let bgColor = 'bg-gray-500/20';
+            let textColor = 'text-gray-300';
+            let statusText = status;
+
+            if (status === 'Strong Hire') {
+                bgColor = 'bg-green-500/20';
+                textColor = 'text-green-400';
+            } else if (status === 'Good Potential') {
+                bgColor = 'bg-yellow-500/20';
+                textColor = 'text-yellow-400';
+            } else if (status === 'Needs Improvement') {
+                bgColor = 'bg-red-500/20';
+                textColor = 'text-red-400';
+            }
+
+            container.innerHTML = `
+                <div class="inline-block px-4 py-2 rounded-full ${bgColor} ${textColor} border border-current">
+                    <span class="font-bold">Overall Status:</span> ${statusText}
+                </div>
+            `;
+        }
+
         // --- Speech & AI Functions ---
         function setupSpeechSynthesis() {
             const voices = speechSynthesis.getVoices();
@@ -564,6 +492,7 @@
         }
 
         function speak(text, onEndCallback) {
+            feedbackContainer.classList.add('hidden');
             aiQuestion.textContent = text;
             const utterance = new SpeechSynthesisUtterance(text);
             if (currentLang === 'hi' && hindiVoice) {
@@ -583,6 +512,7 @@
             if (!recognition || isListening) return;
             isListening = true;
             recognition.lang = currentLang === 'hi' ? 'hi-IN' : 'en-IN';
+            updateStatus('status_listening', 'listening');
             recognition.start();
         }
         
@@ -591,24 +521,36 @@
             isListening = false;
             recognition.stop();
             clearTimeout(silenceTimeout);
+            updateStatus('status_processing', 'thinking');
         }
 
-        async function callGeminiAPI(history) {
+        async function callGeminiAPI(history, purpose = "interview") {
+            let statusKey = 'status_thinking';
+            if (purpose === 'description') statusKey = 'status_generating_desc';
+            if (purpose === 'hint') statusKey = 'status_generating_hint';
+            updateStatus(statusKey, 'thinking');
+        
             try {
                 const response = await fetch('/.netlify/functions/gemini', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ history: history })
                 });
-                if (!response.ok) throw new Error(`API request failed`);
+        
+                if (!response.ok) {
+                    throw new Error(`API request failed with status ${response.status}`);
+                }
+        
                 const result = await response.json();
+        
                 if (result.candidates && result.candidates.length > 0) {
                     return result.candidates[0].content.parts[0].text;
                 }
                 throw new Error(result.error || "No response from AI.");
+        
             } catch (error) {
                 console.error("API Error:", error);
-                speak(translations[currentLang].status_network_error, () => {});
+                speak(translations[currentLang].status_network_error, () => updateStatus('status_network_error', 'error'));
                 return null;
             }
         }
@@ -616,7 +558,7 @@
         // --- Core Logic Functions ---
         async function handleInterviewTurn(userAnswer) {
              if(userAnswer) conversationHistory.push({ role: "user", parts: [{ text: userAnswer }] });
-             const aiResponseText = await callGeminiAPI(conversationHistory);
+             const aiResponseText = await callGeminiAPI(conversationHistory, "interview");
              
              if(aiResponseText){
                  conversationHistory.push({ role: "model", parts: [{ text: aiResponseText }] });
@@ -625,44 +567,34 @@
 
                  if (parts.length === 3) {
                      [feedback, idealAnswer, nextQuestion] = parts.map(p => p.trim());
-                     if(currentQuestion && userTranscript.textContent !== "Your response will appear here..."){
+                     if(currentQuestion && userTranscript.textContent !== translations[currentLang].transcript_placeholder){
                         interviewLog.push({ question: currentQuestion, userAnswer: userTranscript.textContent, feedback, idealAnswer });
                      }
                  } else {
                      nextQuestion = aiResponseText;
                  }
                  currentQuestion = nextQuestion;
+                 if (feedback) {
+                     aiFeedback.textContent = feedback;
+                     feedbackContainer.classList.remove('hidden');
+                 }
                  speak(nextQuestion, () => { if (isInterviewActive) startListening(); });
              }
         }
 
-        async function startInterview() {
+        function startInterview() {
             const jobTitle = jobTitleInput.value.trim();
             const jobDescription = jobDescriptionInput.value.trim();
-            if (!jobDescription) { 
-                showNotification(translations[currentLang].alert_no_jd);
-                return; 
-            }
-            if (!recognition) { 
-                showNotification("Your browser doesn't support Speech Recognition.");
-                return; 
-            }
+            const difficulty = difficultyInput.value;
+            const languageName = currentLang === 'hi' ? 'Hinglish (a mix of Hindi and English)' : 'English';
 
-            try {
-                userStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
-                userVideo.srcObject = userStream;
-                aiVideo.src = 'https://placehold.co/1280x720/0A091A/E0E0E0?text=AI+Agent'; // Placeholder for AI video
-            } catch (err) {
-                console.error("Error accessing media devices.", err);
-                showNotification("Could not access camera and microphone. Please check permissions.");
-                return;
-            }
+            if (!jobDescription) { alert(translations[currentLang].alert_no_jd); return; }
+            if (!recognition) { alert("Your browser doesn't support Speech Recognition. Please use Google Chrome."); return; }
 
             isInterviewActive = true;
             showScreen('interviewScreen');
+            interviewTitle.textContent = `${jobTitle || 'Role'} ke liye Interview`;
 
-            const difficulty = difficultyInput.value;
-            const languageName = currentLang === 'hi' ? 'Hinglish' : 'English';
             const initialPrompt = `You are an expert, friendly, and encouraging AI Interview Coach named 'Alex'. Your task is to conduct a supportive mock interview entirely in ${languageName}. Here are your instructions: 1. Start with a warm welcome in ${languageName}, introduce yourself as an AI coach, and then ask the very first question in ${languageName}. 2. After I provide an answer, you MUST respond in three parts, separated by "|||". 3. Part 1: Brief, positive, and constructive feedback on my answer, in ${languageName}. 4. Part 2: A well-structured, ideal answer for the question asked, in ${languageName}. 5. Part 3: A hint for the next topic, followed by the next relevant interview question, in ${languageName}. 6. Maintain a friendly, coaching tone throughout. Ask a mix of technical, behavioral, and situational questions based on the job description and the selected difficulty level. Job Description: "${jobDescription}" Difficulty Level: "${difficulty}" Begin the interview now. Your first response should only contain the welcome and the first question in ${languageName}.`;
             
             conversationHistory = [];
@@ -675,35 +607,99 @@
             isInterviewActive = false;
             stopListening();
             window.speechSynthesis.cancel();
-            if (userStream) {
-                userStream.getTracks().forEach(track => track.stop());
-            }
+            
+            const jobTitle = jobTitleInput.value.trim() || 'Practice Interview';
+            const date = new Date().toLocaleString();
+            let status = 'Needs Improvement'; // Default status
+
+            const summaryPrompt = `Based on the following interview log, please generate a comprehensive summary report for the user in ${currentLang === 'hi' ? 'Hinglish' : 'English'}.
+            The report MUST start with a single, overall interview status. Choose one from: "Strong Hire", "Good Potential", "Needs Improvement". Wrap this status in a div with an id, like this: <div id="interview-status">Strong Hire</div>.
+
+            After the status, the report should have two main sections.
+            Format the rest of the output using simple HTML tags. Use <h2> for main titles, <h3> for subtitles, <p> for text, <strong> for highlighting, and <ul>/<li> for lists. Create a container div with class 'summary-block' for each question-answer pair. Do not include <html> or <body> tags.
+            1. <h2>Overall Performance</h2>: A friendly, overall summary. Highlight strengths and point out key areas for improvement constructively.
+            2. <h2>Question Breakdown</h2>: For each item in the log, present the Question, the User's Answer, and the Ideal Answer in a clear, easy-to-read format inside a 'summary-block' div.
+            Interview Log: ${JSON.stringify(interviewLog, null, 2)}`;
             
             showScreen('summaryScreen');
-            summaryContent.innerHTML = '<div class="flex justify-center items-center h-40"><svg class="animate-spin h-8 w-8 text-indigo-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg></div>';
+            summaryPlaceholder.style.display = 'flex';
+            summaryContent.innerHTML = '';
+            summaryContent.appendChild(summaryPlaceholder);
 
-            const summaryPrompt = `Based on the following interview log, generate a comprehensive summary report in ${currentLang === 'hi' ? 'Hinglish' : 'English'}. Format using simple HTML (<h2>, <h3>, <p>, <strong>, <ul>, <li>). Include: 1. <h2>Overall Performance</h2>: A summary of strengths and areas for improvement. 2. <h2>Question Breakdown</h2>: For each item, present the Question, User's Answer, and Ideal Answer. Interview Log: ${JSON.stringify(interviewLog, null, 2)}`;
-            
-            const summaryHTML = await callGeminiAPI([{ role: "user", parts: [{ text: summaryPrompt }] }]);
+            const summaryHTML = await callGeminiAPI([{ role: "user", parts: [{ text: summaryPrompt }] }], "summary");
             if (summaryHTML) {
-                summaryContent.innerHTML = summaryHTML;
-                saveInterviewToHistory({ title: jobTitleInput.value.trim() || 'Practice Interview', date: new Date().toLocaleString(), status: 'Review', summary: summaryHTML });
+                summaryPlaceholder.style.display = 'none';
+
+                const tempDiv = document.createElement('div');
+                tempDiv.innerHTML = summaryHTML;
+
+                const statusElement = tempDiv.querySelector('#interview-status');
+                if (statusElement) {
+                    status = statusElement.textContent.trim();
+                    displayInterviewStatus(status);
+                    statusElement.remove();
+                }
+
+                summaryContent.innerHTML = tempDiv.innerHTML;
+
+                // Save to history
+                saveInterviewToHistory({ title: jobTitle, date, status, summary: summaryContent.innerHTML });
             } else {
-                 summaryContent.innerHTML = `<p class="text-red-400">Sorry, an error occurred.</p>`;
+                 summaryContent.innerHTML = `<p class="text-red-400">${translations[currentLang].summary_generating_error || 'Sorry, an error occurred while generating the summary.'}</p>`;
+            }
+        }
+        
+        async function handleGenerateDescription() {
+            const jobTitle = jobTitleInput.value.trim();
+            if (!jobTitle) { alert(translations[currentLang].alert_no_title_for_jd); return; }
+            
+            const originalButtonHTML = generateDescBtn.innerHTML;
+            generateDescBtn.disabled = true;
+            generateDescBtn.innerHTML = `
+                <svg class="animate-spin -ml-1 mr-2 h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                Generating...
+            `;
+            generateDescBtn.classList.add('flex', 'items-center', 'justify-center');
+            
+            jobDescriptionInput.placeholder = translations[currentLang].status_generating_desc;
+            
+            const prompt = `You are an expert HR manager. Write a detailed job description for the following job title: "${jobTitle}". Include typical responsibilities, required skills, and qualifications. The description should be well-formatted and professional. Write the description in English.`;
+            
+            try {
+                const description = await callGeminiAPI([{ role: "user", parts: [{ text: prompt }] }], "description");
+                
+                if (description) {
+                    jobDescriptionInput.value = description;
+                } else {
+                    jobDescriptionInput.placeholder = "Description generation failed. Please try again.";
+                }
+            } catch (error) {
+                 console.error("Error during description generation:", error);
+                 jobDescriptionInput.placeholder = "Description generation failed. Please try again.";
+            } finally {
+                generateDescBtn.disabled = false;
+                generateDescBtn.innerHTML = originalButtonHTML;
+                generateDescBtn.classList.remove('flex', 'items-center', 'justify-center');
+                updateStatus('status_ready', 'waiting');
             }
         }
         
         async function handleHint() {
             if (!isInterviewActive || !currentQuestion) return;
             hintBtn.disabled = true;
-            const prompt = `The user is stuck on: "${currentQuestion}". Provide a brief, one-sentence hint in ${currentLang === 'hi' ? 'Hinglish' : 'English'}.`;
-            const hint = await callGeminiAPI([{ role: "user", parts: [{ text: prompt }] }]);
+            
+            const prompt = `The user is stuck on the following interview question: "${currentQuestion}". Provide a brief, one-sentence hint in ${currentLang === 'hi' ? 'Hinglish' : 'English'} to help them get started without giving away the full answer. The hint should be encouraging.`;
+            const hint = await callGeminiAPI([{ role: "user", parts: [{ text: prompt }] }], "hint");
             
             if (hint) {
-                hintArea.textContent = hint;
-                hintArea.classList.remove('hidden');
+                aiFeedback.textContent = `${translations[currentLang].feedback_label.replace(':', '')}: ${hint}`;
+                feedbackContainer.classList.remove('hidden');
             }
             hintBtn.disabled = false;
+            updateStatus('status_listening', 'listening');
         }
 
         function resetAppToHome() {
@@ -716,6 +712,7 @@
             jobTitleInput.value = '';
             jobDescriptionInput.value = '';
             setLanguage(languageSelector.value);
+            updateStatus('status_waiting', 'waiting');
         }
 
         // --- History & Drawer Functions ---
@@ -731,7 +728,7 @@
             const history = getInterviewHistory();
             history.unshift(interviewData);
             localStorage.setItem(`interviewHistory_${user.id}`, JSON.stringify(history));
-            updateDrawerUI(user);
+            updateDrawerUI(user); // Refresh drawer UI immediately
         }
 
         function deleteInterviewFromHistory(index) {
@@ -755,6 +752,8 @@
             const record = history[index];
             if (record) {
                 showScreen('summaryScreen');
+                displayInterviewStatus(record.status);
+                summaryPlaceholder.style.display = 'none';
                 summaryContent.innerHTML = record.summary;
                 toggleDrawer(false);
             }
@@ -914,6 +913,7 @@
         }
 
         // --- Event Listeners & Init ---
+        languageSelector.addEventListener('change', (e) => setLanguage(e.target.value));
         startInterviewHomeBtn.addEventListener('click', () => {
             const user = netlifyIdentity.currentUser();
             if (user) {
@@ -924,9 +924,13 @@
             }
         });
         startInterviewBtn.addEventListener('click', startInterview);
-        homeLink.addEventListener('click', (e) => { e.preventDefault(); resetAppToHome(); });
+        homeLink.addEventListener('click', (e) => {
+            e.preventDefault();
+            resetAppToHome();
+        });
         endInterviewBtn.addEventListener('click', endInterview);
-        startNewInterviewBtn.addEventListener('click', () => showScreen('setupScreen'));
+        restartBtn.addEventListener('click', () => showScreen('setupScreen'));
+        generateDescBtn.addEventListener('click', handleGenerateDescription);
         hintBtn.addEventListener('click', handleHint);
         drawerBackdrop.addEventListener('click', () => toggleDrawer(false));
         featuresLink.addEventListener('click', (e) => {
@@ -938,30 +942,6 @@
              featuresModal.classList.add('hidden');
             featuresModal.classList.remove('flex');
         });
-        micBtn.addEventListener('click', () => {
-            if(userStream) {
-                userStream.getAudioTracks()[0].enabled = !userStream.getAudioTracks()[0].enabled;
-                micBtn.classList.toggle('active');
-            }
-        });
-        cameraBtn.addEventListener('click', () => {
-            if(userStream) {
-                userStream.getVideoTracks()[0].enabled = !userStream.getVideoTracks()[0].enabled;
-                cameraBtn.classList.toggle('active');
-            }
-        });
-        userVideo.addEventListener('click', () => {
-            // Swap video feeds
-            const mainSrcObject = aiVideo.srcObject;
-            const mainSrc = aiVideo.src;
-            const pipSrcObject = userVideo.srcObject;
-            const pipSrc = userVideo.src;
-
-            aiVideo.srcObject = pipSrcObject;
-            aiVideo.src = pipSrc;
-            userVideo.srcObject = mainSrcObject;
-            userVideo.src = mainSrc;
-        });
 
 
         window.addEventListener('load', () => {
@@ -969,10 +949,11 @@
              if ('speechSynthesis' in window) {
                  speechSynthesis.onvoiceschanged = setupSpeechSynthesis;
              }
+             updateStatus('status_waiting', 'waiting');
              if (!window.netlifyIdentity) {
                 headerAuthSection.innerHTML = '';
+                showScreen('homeScreen');
              }
-             showScreen('homeScreen');
         });
 
         if (recognition) {
@@ -994,6 +975,14 @@
             recognition.onerror = (e) => {
                 console.error("Speech recognition error:", e.error);
                 isListening = false;
+                let errorKey = 'An unknown error occurred.';
+                if (e.error === 'network') errorKey = 'status_network_error';
+                else if (e.error === 'no-speech' && isInterviewActive) {
+                    speak(translations[currentLang].status_no_speech, () => { if(isInterviewActive) startListening(); });
+                    return;
+                } 
+                else if (e.error === 'audio-capture') errorKey = 'status_mic_error';
+                updateStatus(errorKey, 'error');
             };
             
             recognition.onend = () => {
