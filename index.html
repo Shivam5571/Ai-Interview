@@ -29,11 +29,6 @@
                 radial-gradient(at 20% 90%, hsla(333, 72%, 52%, 0.2) 0px, transparent 50%),
                 radial-gradient(at 80% 80%, hsla(173, 72%, 52%, 0.25) 0px, transparent 50%);
             z-index: -1;
-            animation: rotate-gradient 20s linear infinite;
-        }
-        @keyframes rotate-gradient {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
         }
         .screen {
             transition: opacity 0.5s ease-in-out, transform 0.5s ease-in-out;
@@ -159,22 +154,8 @@
             background-color: #3b82f6;
             color: white;
         }
-        /* Typing effect */
-        .typing-cursor {
-            display: inline-block;
-            width: 3px;
-            height: 2.5rem;
-            background-color: #3b82f6;
-            animation: blink 1s infinite;
-            margin-left: 8px;
-            vertical-align: middle;
-        }
-        @keyframes blink {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0; }
-        }
         
-        /* --- NEW VIDEO INTERVIEW STYLES --- */
+        /* --- VIDEO INTERVIEW STYLES --- */
         #interviewScreen {
             display: grid;
             grid-template-columns: 2fr 1fr;
@@ -268,6 +249,8 @@
 </head>
 <body class="flex flex-col min-h-screen">
     <div id="background-gradient"></div>
+    
+    <div id="notification" class="fixed top-5 right-5 bg-red-500 text-white p-4 rounded-lg shadow-lg z-50 hidden transition-opacity duration-300"></div>
 
     <!-- Features Modal -->
     <div id="featuresModal" class="fixed inset-0 bg-black/60 z-50 hidden items-center justify-center p-4">
@@ -346,13 +329,13 @@
         </div>
     </header>
 
-    <main class="flex-grow flex items-center justify-center p-4">
+    <main class="flex-grow flex p-4">
         <div id="app" class="w-full h-full flex items-center justify-center">
             
             <!-- Home Screen -->
-            <div id="homeScreen" class="screen w-full max-w-4xl mx-auto text-center">
+            <div id="homeScreen" class="screen hidden w-full max-w-4xl mx-auto text-center">
                 <h2 class="text-4xl md:text-6xl font-extrabold text-white">Interview Moke-Ai:</h2>
-                <p id="tagline-typing" class="text-2xl md:text-4xl font-semibold text-gray-300 mt-2 min-h-[3rem]"></p>
+                <p id="tagline-typing" class="text-2xl md:text-4xl font-semibold text-gray-300 mt-2 min-h-[3rem]">Crack Your Next Interview With Confidence</p>
                 
                 <div class="grid grid-cols-2 md:grid-cols-4 gap-8 md:gap-12 my-16">
                     <div class="feature-item flex flex-col items-center">
@@ -417,7 +400,7 @@
                 </div>
             </div>
 
-            <!-- NEW Video Interview Screen -->
+            <!-- Video Interview Screen -->
             <div id="interviewScreen" class="screen hidden">
                 <div class="video-main">
                     <video id="aiVideo" class="video-feed" autoplay playsinline></video>
@@ -534,9 +517,27 @@
 
         // --- UI Functions ---
         function showScreen(screenId) {
+            const app = document.getElementById('app');
             document.querySelectorAll('.screen').forEach(screen => {
                 screen.classList.toggle('hidden', screen.id !== screenId);
             });
+            // Adjust container alignment for different screens
+            if (screenId === 'interviewScreen' || screenId === 'summaryScreen') {
+                app.classList.remove('items-center', 'justify-center');
+            } else {
+                app.classList.add('items-center', 'justify-center');
+            }
+        }
+
+        function showNotification(message, isError = true) {
+            const notification = document.getElementById('notification');
+            notification.textContent = message;
+            notification.classList.toggle('bg-red-500', isError);
+            notification.classList.toggle('bg-green-500', !isError);
+            notification.classList.remove('hidden');
+            setTimeout(() => {
+                notification.classList.add('hidden');
+            }, 5000);
         }
 
         function setLanguage(lang) {
@@ -638,8 +639,14 @@
         async function startInterview() {
             const jobTitle = jobTitleInput.value.trim();
             const jobDescription = jobDescriptionInput.value.trim();
-            if (!jobDescription) { alert(translations[currentLang].alert_no_jd); return; }
-            if (!recognition) { alert("Your browser doesn't support Speech Recognition."); return; }
+            if (!jobDescription) { 
+                showNotification(translations[currentLang].alert_no_jd);
+                return; 
+            }
+            if (!recognition) { 
+                showNotification("Your browser doesn't support Speech Recognition.");
+                return; 
+            }
 
             try {
                 userStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
@@ -647,7 +654,7 @@
                 aiVideo.src = 'https://placehold.co/1280x720/0A091A/E0E0E0?text=AI+Agent'; // Placeholder for AI video
             } catch (err) {
                 console.error("Error accessing media devices.", err);
-                alert("Could not access camera and microphone. Please check permissions.");
+                showNotification("Could not access camera and microphone. Please check permissions.");
                 return;
             }
 
@@ -906,23 +913,6 @@
             });
         }
 
-        // --- Typing Effect Logic ---
-        function typeEffect(element, text, speed) {
-            let i = 0;
-            element.innerHTML = "";
-            const cursor = '<span class="typing-cursor"></span>';
-            element.innerHTML = cursor;
-            
-            function type() {
-                if (i < text.length) {
-                    element.innerHTML = text.substring(0, i + 1) + cursor;
-                    i++;
-                    setTimeout(type, speed);
-                }
-            }
-            type();
-        }
-
         // --- Event Listeners & Init ---
         startInterviewHomeBtn.addEventListener('click', () => {
             const user = netlifyIdentity.currentUser();
@@ -949,20 +939,27 @@
             featuresModal.classList.remove('flex');
         });
         micBtn.addEventListener('click', () => {
-            userStream.getAudioTracks()[0].enabled = !userStream.getAudioTracks()[0].enabled;
-            micBtn.classList.toggle('active');
+            if(userStream) {
+                userStream.getAudioTracks()[0].enabled = !userStream.getAudioTracks()[0].enabled;
+                micBtn.classList.toggle('active');
+            }
         });
         cameraBtn.addEventListener('click', () => {
-            userStream.getVideoTracks()[0].enabled = !userStream.getVideoTracks()[0].enabled;
-            cameraBtn.classList.toggle('active');
+            if(userStream) {
+                userStream.getVideoTracks()[0].enabled = !userStream.getVideoTracks()[0].enabled;
+                cameraBtn.classList.toggle('active');
+            }
         });
         userVideo.addEventListener('click', () => {
             // Swap video feeds
+            const mainSrcObject = aiVideo.srcObject;
             const mainSrc = aiVideo.src;
-            const pipSrc = userVideo.srcObject;
-            aiVideo.src = ''; // Clear src to avoid issues
-            aiVideo.srcObject = pipSrc;
-            userVideo.srcObject = null;
+            const pipSrcObject = userVideo.srcObject;
+            const pipSrc = userVideo.src;
+
+            aiVideo.srcObject = pipSrcObject;
+            aiVideo.src = pipSrc;
+            userVideo.srcObject = mainSrcObject;
             userVideo.src = mainSrc;
         });
 
@@ -974,9 +971,8 @@
              }
              if (!window.netlifyIdentity) {
                 headerAuthSection.innerHTML = '';
-                showScreen('homeScreen');
              }
-             typeEffect(taglineTypingElement, "Crack Your Next Interview With Confidence", 100);
+             showScreen('homeScreen');
         });
 
         if (recognition) {
