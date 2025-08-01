@@ -670,7 +670,13 @@
         languageSelector.addEventListener('change', (e) => setLanguage(e.target.value));
         
         startInterviewBtn.addEventListener('click', () => {
-            startInterview();
+            const user = window.netlifyIdentity ? netlifyIdentity.currentUser() : null;
+            if (user) {
+                startInterview();
+            } else {
+                loginAndStart = true;
+                showScreen('authScreen');
+            }
         });
 
         endInterviewBtn.addEventListener('click', endInterview);
@@ -738,12 +744,8 @@
             }
 
             netlifyIdentity.on('init', user => {
-                if (user) {
-                    updateUserUI(user);
-                    showScreen('setupScreen');
-                } else {
-                    showScreen('authScreen');
-                }
+                updateUserUI(user);
+                showScreen(user ? 'setupScreen' : 'authScreen');
             });
 
             netlifyIdentity.on('login', user => {
