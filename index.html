@@ -644,31 +644,47 @@
             if (purpose === 'description') statusKey = 'status_generating_desc';
             if (purpose === 'hint') statusKey = 'status_generating_hint';
             updateStatus(statusKey, 'thinking');
-        
-            try {
-                // This is a placeholder for a serverless function call
-                // In a real app, this would be `fetch('/.netlify/functions/gemini', ...)`
-                // For local testing, we simulate a delay and response.
-                console.log("Calling mock Gemini API with history:", history);
-                await new Promise(resolve => setTimeout(resolve, 1500)); // Simulate network delay
-                
-                const lastUserMessage = history[history.length - 1].parts[0].text;
-                let mockResponse = "";
 
-                if (purpose === "description") {
-                    mockResponse = `**Job Title: ${jobTitleInput.value.trim()}**\n\n**Responsibilities:**\n- Design and build advanced applications for the Android platform.\n- Collaborate with cross-functional teams to define, design, and ship new features.\n- Unit-test code for robustness, including edge cases, usability, and general reliability.\n\n**Skills:**\n- Proven software development experience and Android skills development.\n- Experience with Android SDK.\n- Experience working with remote data via REST and JSON.`;
-                } else if (purpose === "hint") {
-                    mockResponse = "Try thinking about a specific project where you faced a challenge and how you overcame it. The STAR method could be helpful here.";
-                } else if (lastUserMessage.includes("Begin the interview now")) {
-                    mockResponse = "Hello! I'm Alex, your AI interview coach. I'm here to help you practice. Let's start with your first question: Can you tell me about yourself and your experience relevant to this role?";
-                } else {
-                     mockResponse = `That's a good start.|||A great answer would also include specific metrics to quantify your achievements. For example, "I improved performance by 30%".|||Okay, let's move on. My next question is: How do you handle tight deadlines and pressure?`;
+            const apiKey = ""; // Provided by the environment
+            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${apiKey}`;
+
+            const payload = {
+                contents: history,
+                safetySettings: [
+                    { category: "HARM_CATEGORY_HARASSMENT", threshold: "BLOCK_NONE" },
+                    { category: "HARM_CATEGORY_HATE_SPEECH", threshold: "BLOCK_NONE" },
+                    { category: "HARM_CATEGORY_SEXUALLY_EXPLICIT", threshold: "BLOCK_NONE" },
+                    { category: "HARM_CATEGORY_DANGEROUS_CONTENT", threshold: "BLOCK_NONE" },
+                ],
+            };
+
+            try {
+                const response = await fetch(apiUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                if (!response.ok) {
+                    const errorBody = await response.text();
+                    console.error("API Error Response:", errorBody);
+                    throw new Error(`API request failed with status ${response.status}`);
                 }
+
+                const result = await response.json();
                 
-                return mockResponse;
+                if (result.candidates && result.candidates.length > 0 && result.candidates[0].content && result.candidates[0].content.parts) {
+                    return result.candidates[0].content.parts[0].text;
+                } else {
+                    console.error("Unexpected API response structure:", result);
+                    if (result.promptFeedback && result.promptFeedback.blockReason) {
+                        return `The conversation was stopped due to: ${result.promptFeedback.blockReason}. Let's try a different question.|||No ideal answer available.|||Let's move to the next question.`;
+                    }
+                    throw new Error("No valid response from AI.");
+                }
 
             } catch (error) {
-                console.error("API Error:", error);
+                console.error("API Call Error:", error);
                 speak(translations[currentLang].status_network_error, () => updateStatus('status_network_error', 'error'));
                 return null;
             }
@@ -762,17 +778,7 @@
                 summaryPlaceholder.style.display = 'none';
 
                 const tempDiv = document.createElement('div');
-                const mockFullSummary = `<div id="interview-status">Good Potential</div>
-                    <h2>Overall Performance</h2>
-                    <p>You did a great job! You have a solid foundation but could improve on structuring your answers and providing specific examples.</p>
-                    <h2>Question Breakdown</h2>
-                    <div class="summary-block">
-                        <h3>Question:</h3><p>${interviewLog[0]?.question || 'Tell me about yourself.'}</p>
-                        <h3>Your Answer:</h3><p>${interviewLog[0]?.userAnswer || 'I am a developer.'}</p>
-                        <h3>Ideal Answer:</h3><p>${interviewLog[0]?.idealAnswer || 'A more detailed answer would be better.'}</p>
-                    </div>`;
-
-                tempDiv.innerHTML = summaryHTML.includes('<div id="interview-status">') ? summaryHTML : mockFullSummary;
+                tempDiv.innerHTML = summaryHTML;
 
                 const statusElement = tempDiv.querySelector('#interview-status');
                 if (statusElement) {
