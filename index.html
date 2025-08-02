@@ -155,8 +155,11 @@
             transition: all 0.5s ease-in-out;
             border-radius: 1rem;
             overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: #1a1a2e;
         }
-        #aiVideoContainer video { border-radius: 1rem; }
         
         /* Swapped State */
         .swapped #userVideoContainer {
@@ -183,8 +186,15 @@
             cursor: pointer;
             z-index: 10;
         }
-        .swapped #aiVideoContainer video { border-radius: 9999px; }
 
+        @keyframes talking {
+            0% { transform: scaleY(1); }
+            50% { transform: scaleY(0.7); }
+            100% { transform: scaleY(1); }
+        }
+        .is-talking #mouth {
+            animation: talking 0.3s infinite;
+        }
 
         @keyframes fadeInUp {
             from { opacity: 0; transform: translateY(20px); }
@@ -366,7 +376,14 @@
                            <div id="videoFeedContainer" class="video-container flex-grow bg-black/20 rounded-xl flex items-center justify-center relative min-h-[300px] md:min-h-[400px] overflow-hidden">
                                 <!-- AI Agent Video -->
                                 <div id="aiVideoContainer">
-                                    <video id="aiVideoElement" class="w-full h-full object-cover" autoplay muted loop playsinline></video>
+                                    <div id="aiAvatar" class="w-full h-full flex items-center justify-center">
+                                        <svg viewBox="0 0 100 100" class="w-3/4 h-3/4">
+                                            <circle cx="50" cy="50" r="45" fill="#2a2a3e"/>
+                                            <circle cx="35" cy="40" r="5" fill="white"/>
+                                            <circle cx="65" cy="40" r="5" fill="white"/>
+                                            <path id="mouth" d="M 40 70 Q 50 70 60 70" stroke="white" stroke-width="3" fill="none" stroke-linecap="round" style="transition: d 0.2s; transform-origin: center;"/>
+                                        </svg>
+                                    </div>
                                 </div>
                                 <!-- User Video -->
                                 <div id="userVideoContainer">
@@ -507,10 +524,10 @@
         const videoElement = document.getElementById('videoElement');
         const videoPlaceholder = document.getElementById('videoPlaceholder');
         const videoMessage = document.getElementById('videoMessage');
-        const aiVideoElement = document.getElementById('aiVideoElement');
-        const userVideoContainer = document.getElementById('userVideoContainer');
         const aiVideoContainer = document.getElementById('aiVideoContainer');
+        const userVideoContainer = document.getElementById('userVideoContainer');
         const videoFeedContainer = document.getElementById('videoFeedContainer');
+        const aiAvatar = document.getElementById('aiAvatar');
 
 
         // --- Speech Recognition & Synthesis ---
@@ -624,8 +641,19 @@
                 utterance.lang = 'en-US';
             }
             utterance.rate = 0.95;
-            utterance.onend = onEndCallback;
-            utterance.onerror = (e) => { console.error("Speech synthesis error:", e.error); onEndCallback(); };
+            
+            utterance.onstart = () => {
+                aiAvatar.classList.add('is-talking');
+            };
+            utterance.onend = () => {
+                aiAvatar.classList.remove('is-talking');
+                onEndCallback();
+            };
+            utterance.onerror = (e) => {
+                console.error("Speech synthesis error:", e.error);
+                aiAvatar.classList.remove('is-talking');
+                onEndCallback();
+            };
             window.speechSynthesis.speak(utterance);
         }
 
@@ -844,10 +872,6 @@
 
         // --- Media Functions ---
         async function setupCamera() {
-            // Set up AI agent video
-            aiVideoElement.src = 'https://videos.pexels.com/video-files/856722/856722-hd_1280_720_25fps.mp4';
-            aiVideoElement.play();
-
             try {
                 userStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
                 videoElement.srcObject = userStream;
