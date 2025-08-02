@@ -866,7 +866,7 @@
 
         // --- Media Functions ---
         async function setupCamera() {
-            aiAvatarVideo.src = 'https://videos.pexels.com/video-files/8040430/8040430-hd_1920_1080_25fps.mp4';
+            aiAvatarVideo.src = './assets/Professional_Interviewer_Video_Generated.mp4';
             try {
                 userStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
                 videoElement.srcObject = userStream;
