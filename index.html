@@ -649,13 +649,7 @@
             const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${apiKey}`;
 
             const payload = {
-                contents: history,
-                safetySettings: [
-                    { category: "HARM_CATEGORY_HARASSMENT", threshold: "BLOCK_NONE" },
-                    { category: "HARM_CATEGORY_HATE_SPEECH", threshold: "BLOCK_NONE" },
-                    { category: "HARM_CATEGORY_SEXUALLY_EXPLICIT", threshold: "BLOCK_NONE" },
-                    { category: "HARM_CATEGORY_DANGEROUS_CONTENT", threshold: "BLOCK_NONE" },
-                ],
+                contents: history
             };
 
             const maxRetries = 3;
@@ -681,7 +675,7 @@
                     if (result.candidates && result.candidates.length > 0 && result.candidates[0].content && result.candidates[0].content.parts) {
                         return result.candidates[0].content.parts[0].text; // Success, exit loop
                     } else {
-                        console.error("Unexpected API response structure:", result);
+                        console.error("Unexpected API response structure or content blocked:", result);
                         if (result.promptFeedback && result.promptFeedback.blockReason) {
                              return `The conversation was stopped due to: ${result.promptFeedback.blockReason}. Let's try a different question.|||No ideal answer available.|||Let's move to the next question.`;
                         }
@@ -691,16 +685,16 @@
                     console.error(`API Call Attempt ${attempt + 1} failed:`, error);
                     attempt++;
                     if (attempt >= maxRetries) {
-                        // All retries failed
-                        speak(translations[currentLang].status_network_error, () => updateStatus('status_network_error', 'error'));
+                        if (purpose === 'interview') {
+                            speak(translations[currentLang].status_network_error, () => updateStatus('status_network_error', 'error'));
+                        }
                         return null;
                     }
-                    // Wait before retrying
                     await new Promise(resolve => setTimeout(resolve, delay));
                     delay *= 2; // Exponential backoff
                 }
             }
-            return null; // Should not be reached, but for safety
+            return null;
         }
         
         // --- Core Logic Functions ---
@@ -1243,4 +1237,3 @@
     </script>
 </body>
 </html>
-
