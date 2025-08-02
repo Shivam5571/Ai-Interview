@@ -644,57 +644,30 @@
             if (purpose === 'description') statusKey = 'status_generating_desc';
             if (purpose === 'hint') statusKey = 'status_generating_hint';
             updateStatus(statusKey, 'thinking');
-
-            const apiKey = ""; // Provided by the environment
-            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${apiKey}`;
-
-            const payload = {
-                contents: history
-            };
-
-            const maxRetries = 3;
-            let attempt = 0;
-            let delay = 1000; // 1 second
-
-            while (attempt < maxRetries) {
-                try {
-                    const response = await fetch(apiUrl, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify(payload)
-                    });
-
-                    if (!response.ok) {
-                        const errorBody = await response.text();
-                        console.error(`API Error Response (Status: ${response.status}):`, errorBody);
-                        throw new Error(`API request failed with status ${response.status}`);
-                    }
-
-                    const result = await response.json();
-                    
-                    if (result.candidates && result.candidates.length > 0 && result.candidates[0].content && result.candidates[0].content.parts) {
-                        return result.candidates[0].content.parts[0].text; // Success, exit loop
-                    } else {
-                        console.error("Unexpected API response structure or content blocked:", result);
-                        if (result.promptFeedback && result.promptFeedback.blockReason) {
-                             return `The conversation was stopped due to: ${result.promptFeedback.blockReason}. Let's try a different question.|||No ideal answer available.|||Let's move to the next question.`;
-                        }
-                        throw new Error("No valid response from AI.");
-                    }
-                } catch (error) {
-                    console.error(`API Call Attempt ${attempt + 1} failed:`, error);
-                    attempt++;
-                    if (attempt >= maxRetries) {
-                        if (purpose === 'interview') {
-                            speak(translations[currentLang].status_network_error, () => updateStatus('status_network_error', 'error'));
-                        }
-                        return null;
-                    }
-                    await new Promise(resolve => setTimeout(resolve, delay));
-                    delay *= 2; // Exponential backoff
+        
+            try {
+                const response = await fetch('/.netlify/functions/gemini', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ history: history })
+                });
+        
+                if (!response.ok) {
+                    throw new Error(`API request failed with status ${response.status}`);
                 }
+        
+                const result = await response.json();
+        
+                if (result.candidates && result.candidates.length > 0) {
+                    return result.candidates[0].content.parts[0].text;
+                }
+                throw new Error(result.error || "No response from AI.");
+        
+            } catch (error) {
+                console.error("API Error:", error);
+                speak(translations[currentLang].status_network_error, () => updateStatus('status_network_error', 'error'));
+                return null;
             }
-            return null;
         }
         
         // --- Core Logic Functions ---
