@@ -658,36 +658,49 @@
                 ],
             };
 
-            try {
-                const response = await fetch(apiUrl, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(payload)
-                });
+            const maxRetries = 3;
+            let attempt = 0;
+            let delay = 1000; // 1 second
 
-                if (!response.ok) {
-                    const errorBody = await response.text();
-                    console.error("API Error Response:", errorBody);
-                    throw new Error(`API request failed with status ${response.status}`);
-                }
+            while (attempt < maxRetries) {
+                try {
+                    const response = await fetch(apiUrl, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
+                    });
 
-                const result = await response.json();
-                
-                if (result.candidates && result.candidates.length > 0 && result.candidates[0].content && result.candidates[0].content.parts) {
-                    return result.candidates[0].content.parts[0].text;
-                } else {
-                    console.error("Unexpected API response structure:", result);
-                    if (result.promptFeedback && result.promptFeedback.blockReason) {
-                        return `The conversation was stopped due to: ${result.promptFeedback.blockReason}. Let's try a different question.|||No ideal answer available.|||Let's move to the next question.`;
+                    if (!response.ok) {
+                        const errorBody = await response.text();
+                        console.error(`API Error Response (Status: ${response.status}):`, errorBody);
+                        throw new Error(`API request failed with status ${response.status}`);
                     }
-                    throw new Error("No valid response from AI.");
-                }
 
-            } catch (error) {
-                console.error("API Call Error:", error);
-                speak(translations[currentLang].status_network_error, () => updateStatus('status_network_error', 'error'));
-                return null;
+                    const result = await response.json();
+                    
+                    if (result.candidates && result.candidates.length > 0 && result.candidates[0].content && result.candidates[0].content.parts) {
+                        return result.candidates[0].content.parts[0].text; // Success, exit loop
+                    } else {
+                        console.error("Unexpected API response structure:", result);
+                        if (result.promptFeedback && result.promptFeedback.blockReason) {
+                             return `The conversation was stopped due to: ${result.promptFeedback.blockReason}. Let's try a different question.|||No ideal answer available.|||Let's move to the next question.`;
+                        }
+                        throw new Error("No valid response from AI.");
+                    }
+                } catch (error) {
+                    console.error(`API Call Attempt ${attempt + 1} failed:`, error);
+                    attempt++;
+                    if (attempt >= maxRetries) {
+                        // All retries failed
+                        speak(translations[currentLang].status_network_error, () => updateStatus('status_network_error', 'error'));
+                        return null;
+                    }
+                    // Wait before retrying
+                    await new Promise(resolve => setTimeout(resolve, delay));
+                    delay *= 2; // Exponential backoff
+                }
             }
+            return null; // Should not be reached, but for safety
         }
         
         // --- Core Logic Functions ---
