@@ -155,11 +155,9 @@
             transition: all 0.5s ease-in-out;
             border-radius: 1rem;
             overflow: hidden;
-            display: flex;
-            align-items: center;
-            justify-content: center;
             background-color: #1a1a2e;
         }
+        #aiVideoContainer video { border-radius: 1rem; }
         
         /* Swapped State */
         .swapped #userVideoContainer {
@@ -186,15 +184,7 @@
             cursor: pointer;
             z-index: 10;
         }
-
-        @keyframes talking {
-            0% { d: path('M 40 70 Q 50 70 60 70'); }
-            50% { d: path('M 40 70 Q 50 80 60 70'); }
-            100% { d: path('M 40 70 Q 50 70 60 70'); }
-        }
-        .is-talking #mouth {
-            animation: talking 0.5s infinite;
-        }
+        .swapped #aiVideoContainer video { border-radius: 9999px; }
 
 
         @keyframes fadeInUp {
@@ -541,7 +531,12 @@
         let userStream = null;
         let isMicOn = true;
         let isVideoOn = true;
-
+        
+        const videoStates = {
+            speaking: './assets/Professional_Interviewer_Video_Generated.mp4',
+            listening: '/assets/Professional_Interviewer_Video_Generation.mp4',
+            thinking: './assets/AI_Model_Interview_Scene_Generation.mp4'
+        };
         // --- Translation Strings ---
         const translations = {
             en: { main_title: "AI Interview Coach", tagline: "Practice for your dream job.", select_language: "Interview Language", job_title_label: "Job Title", job_desc_label: "Job Description", generate_desc_btn: "Generate Description ✨", job_desc_placeholder: "Paste job description here...", difficulty_label: "Difficulty Level", difficulty_easy: "Easy", difficulty_medium: "Medium", difficulty_hard: "Hard", start_btn: "Start Practice", interview_in_progress: "Interview in Progress...", ai_question_label: "AI COACH", your_answer_label: "Your Answer", status_waiting: "Waiting to start...", transcript_placeholder: "Your spoken answer will appear here...", feedback_label: "Hint Area", hint_btn: "Need a Hint? ✨", end_btn: "End Interview", summary_title: "Interview Summary Report", summary_tagline: "A detailed analysis of your performance.", summary_generating: "Generating your report...", restart_btn: "Start New Interview", status_listening: "Listening...", status_processing: "Processing...", status_thinking: "AI Coach is thinking...", status_generating_desc: "Generating description...", status_generating_hint: "Preparing a hint...", status_ready: "Ready", status_mic_error: "Mic error. Check permissions.", status_network_error: "Network error. Check connection.", status_no_speech: "Didn't hear that. Please repeat.", alert_no_jd: "Please enter a job description to start.", alert_no_title_for_jd: "Please enter a job title to generate a description.", video_permission_error: "Camera access denied. Please allow camera and microphone access in your browser settings." },
@@ -637,15 +632,15 @@
             utterance.rate = 0.95;
             
             utterance.onstart = () => {
-                aiAvatarVideo.play();
+                setAIAvatarState('speaking');
             };
             utterance.onend = () => {
-                aiAvatarVideo.pause();
+                setAIAvatarState('listening');
                 onEndCallback();
             };
             utterance.onerror = (e) => {
                 console.error("Speech synthesis error:", e.error);
-                aiAvatarVideo.pause();
+                setAIAvatarState('listening');
                 onEndCallback();
             };
             window.speechSynthesis.speak(utterance);
@@ -668,6 +663,7 @@
         }
 
         async function callGeminiAPI(history, purpose = "interview") {
+            setAIAvatarState('thinking');
             let statusKey = 'status_thinking';
             if (purpose === 'description') statusKey = 'status_generating_desc';
             if (purpose === 'hint') statusKey = 'status_generating_hint';
@@ -762,6 +758,7 @@
             }
             videoElement.classList.add('hidden');
             videoPlaceholder.classList.remove('hidden');
+            aiAvatarVideo.pause();
 
             const jobTitle = jobTitleInput.value.trim() || 'Practice Interview';
             const date = new Date().toLocaleString();
@@ -865,8 +862,17 @@
         }
 
         // --- Media Functions ---
+        function setAIAvatarState(state) {
+            if (aiAvatarVideo.src !== videoStates[state]) {
+                aiAvatarVideo.src = videoStates[state];
+            }
+            if (state === 'listening' || state === 'thinking') {
+                aiAvatarVideo.play();
+            }
+        }
+
         async function setupCamera() {
-            aiAvatarVideo.src = './assets/Professional_Interviewer_Video_Generated.mp4';
+            setAIAvatarState('listening');
             try {
                 userStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
                 videoElement.srcObject = userStream;
