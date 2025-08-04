@@ -198,20 +198,13 @@
         .animation-delay-400 { animation-delay: 400ms; }
         .animation-delay-600 { animation-delay: 600ms; }
 
-        /* Custom Scrollbar for a sleeker look */
+        /* Hide Scrollbar */
         .scrollable-content::-webkit-scrollbar {
-            width: 8px;
+            display: none; /* Hide scrollbar for Chrome, Safari and Opera */
         }
-        .scrollable-content::-webkit-scrollbar-track {
-            background: rgba(0, 0, 0, 0.2);
-            border-radius: 10px;
-        }
-        .scrollable-content::-webkit-scrollbar-thumb {
-            background: rgba(255, 255, 255, 0.2);
-            border-radius: 10px;
-        }
-        .scrollable-content::-webkit-scrollbar-thumb:hover {
-            background: rgba(255, 255, 255, 0.3);
+        .scrollable-content {
+            -ms-overflow-style: none;  /* IE and Edge */
+            scrollbar-width: none;  /* Firefox */
         }
     </style>
 </head>
@@ -1250,7 +1243,7 @@
                             });
                         }
                     }
-                }, 2500);
+                }, 4000); // Increased timeout to 4 seconds
             };
 
             recognition.onerror = (e) => {
