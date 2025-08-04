@@ -522,7 +522,8 @@
         // --- Speech Recognition & Synthesis ---
         const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
         const recognition = SpeechRecognition ? new SpeechRecognition() : null;
-        let silenceTimeout;
+        let endOfSpeechTimeout;
+        let noResponseTimeout;
         let englishVoice, hindiVoice;
 
         // --- State Management ---
@@ -536,6 +537,7 @@
         let userStream = null;
         let isMicOn = true;
         let isVideoOn = true;
+        let noResponseCounter = 0;
         
         const videoStates = {
             speaking: 'https://storage.googleapis.com/gemini-prod.appspot.com/669f744572522_Professional_Interviewer_Video_Generated.mp4',
@@ -545,8 +547,8 @@
 
         // --- Translation Strings ---
         const translations = {
-            en: { main_title: "AI Interview Coach", tagline: "Practice for your dream job.", select_language: "Interview Language", job_title_label: "Job Title", job_desc_label: "Job Description", generate_desc_btn: "Generate Description ✨", job_desc_placeholder: "Paste job description here...", difficulty_label: "Difficulty Level", difficulty_easy: "Easy", difficulty_medium: "Medium", difficulty_hard: "Hard", start_btn: "Start Practice", interview_in_progress: "Interview in Progress...", ai_question_label: "AI COACH", your_answer_label: "Your Answer", status_waiting: "Waiting to start...", transcript_placeholder: "Your spoken answer will appear here...", feedback_label: "Feedback", hint_btn: "Need a Hint? ✨", end_btn: "End Interview", summary_title: "Interview Summary Report", summary_tagline: "A detailed analysis of your performance.", summary_generating: "Generating your report...", restart_btn: "Start New Interview", status_listening: "Listening...", status_processing: "Processing...", status_thinking: "AI Coach is thinking...", status_generating_desc: "Generating description...", status_generating_hint: "Preparing a hint...", status_ready: "Ready", status_mic_error: "Mic error. Check permissions.", status_network_error: "Network error. Check connection.", status_no_speech: "Didn't hear that. Please repeat.", alert_no_jd: "Please enter a job description to start.", alert_no_title_for_jd: "Please enter a job title to generate a description.", video_permission_error: "Camera access denied. Please allow camera and microphone access in your browser settings." },
-            hi: { main_title: "AI Interview Coach", tagline: "Apne dream job ke liye practice karein.", select_language: "Interview Language", job_title_label: "Job Title", job_desc_label: "Job Description", generate_desc_btn: "Description Generate Karein ✨", job_desc_placeholder: "Job description yahan paste karein...", difficulty_label: "Difficulty Level", difficulty_easy: "Easy", difficulty_medium: "Medium", difficulty_hard: "Hard", start_btn: "Practice Shuru Karein", interview_in_progress: "Interview chal raha hai...", ai_question_label: "AI COACH", your_answer_label: "Aapka Jawab", status_waiting: "Start hone ka wait hai...", transcript_placeholder: "Aapka bola hua jawab yahan dikhega...", feedback_label: "Feedback", hint_btn: "Hint Chahiye? ✨", end_btn: "Interview End Karein", summary_title: "Interview Summary Report", summary_tagline: "Aapke performance ka detailed analysis.", summary_generating: "Aapki report generate ho rahi hai...", restart_btn: "Naya Interview Start Karein", status_listening: "Suna ja raha hai...", status_processing: "Process ho raha hai...", status_thinking: "AI Coach soch raha hai...", status_generating_desc: "Description generate ho rahi hai...", status_generating_hint: "Hint taiyaar ho raha hai...", status_ready: "Ready", status_mic_error: "Mic error. Permissions check karein.", status_network_error: "Network error. Connection check karein.", status_no_speech: "Kuch sunai nahi diya. Please repeat karein.", alert_no_jd: "Start karne ke liye please job description dalein.", alert_no_title_for_jd: "Description generate karne ke liye please job title dalein.", video_permission_error: "Camera access nahi mila. Please browser settings mein camera aur microphone access allow karein." }
+            en: { main_title: "AI Interview Coach", tagline: "Practice for your dream job.", select_language: "Interview Language", job_title_label: "Job Title", job_desc_label: "Job Description", generate_desc_btn: "Generate Description ✨", job_desc_placeholder: "Paste job description here...", difficulty_label: "Difficulty Level", difficulty_easy: "Easy", difficulty_medium: "Medium", difficulty_hard: "Hard", start_btn: "Start Practice", interview_in_progress: "Interview in Progress...", ai_question_label: "AI COACH", your_answer_label: "Your Answer", status_waiting: "Waiting to start...", transcript_placeholder: "Your spoken answer will appear here...", feedback_label: "Feedback", hint_btn: "Need a Hint? ✨", end_btn: "End Interview", summary_title: "Interview Summary Report", summary_tagline: "A detailed analysis of your performance.", summary_generating: "Generating your report...", restart_btn: "Start New Interview", status_listening: "Listening...", status_processing: "Processing...", status_thinking: "AI Coach is thinking...", status_generating_desc: "Generating description...", status_generating_hint: "Preparing a hint...", status_ready: "Ready", status_mic_error: "Mic error. Check permissions.", status_network_error: "Network error. Check connection.", status_no_speech: "Didn't hear that. Please repeat.", alert_no_jd: "Please enter a job description to start.", alert_no_title_for_jd: "Please enter a job title to generate a description.", video_permission_error: "Camera access denied. Please allow camera and microphone access in your browser settings.", reminder_no_response: "I'm waiting for your answer. You can start speaking now.", ending_interview_silence: "Since there's no response, I'll be ending this interview session. Feel free to start a new one anytime!" },
+            hi: { main_title: "AI Interview Coach", tagline: "Apne dream job ke liye practice karein.", select_language: "Interview Language", job_title_label: "Job Title", job_desc_label: "Job Description", generate_desc_btn: "Description Generate Karein ✨", job_desc_placeholder: "Job description yahan paste karein...", difficulty_label: "Difficulty Level", difficulty_easy: "Easy", difficulty_medium: "Medium", difficulty_hard: "Hard", start_btn: "Practice Shuru Karein", interview_in_progress: "Interview chal raha hai...", ai_question_label: "AI COACH", your_answer_label: "Aapka Jawab", status_waiting: "Start hone ka wait hai...", transcript_placeholder: "Aapka bola hua jawab yahan dikhega...", feedback_label: "Feedback", hint_btn: "Hint Chahiye? ✨", end_btn: "Interview End Karein", summary_title: "Interview Summary Report", summary_tagline: "Aapke performance ka detailed analysis.", summary_generating: "Aapki report generate ho rahi hai...", restart_btn: "Naya Interview Start Karein", status_listening: "Suna ja raha hai...", status_processing: "Process ho raha hai...", status_thinking: "AI Coach soch raha hai...", status_generating_desc: "Description generate ho rahi hai...", status_generating_hint: "Hint taiyaar ho raha hai...", status_ready: "Ready", status_mic_error: "Mic error. Permissions check karein.", status_network_error: "Network error. Connection check karein.", status_no_speech: "Kuch sunai nahi diya. Please repeat karein.", alert_no_jd: "Start karne ke liye please job description dalein.", alert_no_title_for_jd: "Description generate karne ke liye please job title dalein.", video_permission_error: "Camera access nahi mila. Please browser settings mein camera aur microphone access allow karein.", reminder_no_response: "Main aapke jawab ka intezaar kar raha hoon. Aap ab bol sakte hain.", ending_interview_silence: "Koi jawab na milne par, main is interview ko abhi ke liye end kar raha hoon. Aap jab chahein naya interview shuru kar sakte hain!" }
         };
 
         // --- UI Functions ---
@@ -629,10 +631,12 @@
             if (!hindiVoice) hindiVoice = voices.find(v => v.lang === 'hi-IN');
         }
 
-        function speak(text, onEndCallback) {
-            feedbackContainer.classList.add('hidden');
-            hintBtn.classList.add('hidden');
-            aiQuestion.innerHTML = text.replace(/\n/g, '<br>'); // Use innerHTML to render line breaks
+        function speak(text, onEndCallback, isReminder = false) {
+            if (!isReminder) {
+                feedbackContainer.classList.add('hidden');
+                hintBtn.classList.add('hidden');
+                aiQuestion.innerHTML = text.replace(/\n/g, '<br>');
+            }
             const utterance = new SpeechSynthesisUtterance(text);
             if (currentLang === 'hi' && hindiVoice) {
                 utterance.voice = hindiVoice;
@@ -648,14 +652,18 @@
             };
             utterance.onend = () => {
                 setAIAvatarState('listening');
-                hintBtn.classList.remove('hidden');
-                onEndCallback();
+                if (!isReminder) {
+                    hintBtn.classList.remove('hidden');
+                }
+                if (onEndCallback) onEndCallback();
             };
             utterance.onerror = (e) => {
                 console.error("Speech synthesis error:", e.error);
                 setAIAvatarState('listening');
-                hintBtn.classList.remove('hidden');
-                onEndCallback();
+                if (!isReminder) {
+                    hintBtn.classList.remove('hidden');
+                }
+                if (onEndCallback) onEndCallback();
             };
             window.speechSynthesis.speak(utterance);
         }
@@ -672,7 +680,8 @@
             if (!recognition || !isListening) return;
             isListening = false;
             recognition.stop();
-            clearTimeout(silenceTimeout);
+            clearTimeout(endOfSpeechTimeout);
+            clearTimeout(noResponseTimeout);
             updateStatus('status_processing', 'thinking');
         }
 
@@ -709,7 +718,26 @@
         }
         
         // --- Core Logic Functions ---
+        function handleNoResponse() {
+            if (!isInterviewActive) return;
+            noResponseCounter++;
+            if (noResponseCounter >= 3) {
+                speak(translations[currentLang].ending_interview_silence, () => endInterview(), true);
+            } else {
+                speak(translations[currentLang].reminder_no_response, () => {
+                    if (isInterviewActive) startNoResponseTimer();
+                }, true);
+            }
+        }
+
+        function startNoResponseTimer() {
+            clearTimeout(noResponseTimeout);
+            noResponseTimeout = setTimeout(handleNoResponse, 10000); // 10 seconds
+        }
+
         async function handleInterviewTurn(userAnswer) {
+             clearTimeout(noResponseTimeout);
+             noResponseCounter = 0;
              hintBtn.classList.add('hidden');
              
              let turnHistory = [...conversationHistory];
@@ -750,7 +778,12 @@
                     feedbackContainer.classList.add('hidden');
                     feedbackContainer.classList.remove('flex');
                  }
-                 speak(nextQuestion, () => { if (isInterviewActive) startListening(); });
+                 speak(nextQuestion, () => { 
+                    if (isInterviewActive) {
+                        startListening();
+                        startNoResponseTimer();
+                    }
+                 });
              }
         }
 
@@ -764,6 +797,7 @@
             if (!recognition) { alert("Your browser doesn't support Speech Recognition. Please use Google Chrome."); return; }
 
             isInterviewActive = true;
+            noResponseCounter = 0;
             showScreen('interviewScreen');
             hintBtn.classList.remove('hidden');
             feedbackContainer.classList.add('hidden');
@@ -796,6 +830,8 @@
             isInterviewActive = false;
             stopListening();
             window.speechSynthesis.cancel();
+            clearTimeout(noResponseTimeout);
+            clearTimeout(endOfSpeechTimeout);
             
             if (userStream) {
                 userStream.getTracks().forEach(track => track.stop());
@@ -1220,6 +1256,9 @@
 
         if (recognition) {
             recognition.onresult = (e) => {
+                clearTimeout(noResponseTimeout); // Clear no-response timer as soon as user speaks
+                noResponseCounter = 0;
+
                 let finalTranscript = '';
                 for (let i = e.resultIndex; i < e.results.length; ++i) {
                     if (e.results[i].isFinal) finalTranscript += e.results[i][0].transcript;
@@ -1227,8 +1266,8 @@
                 if (finalTranscript) {
                     userTranscript.textContent = finalTranscript;
                 }
-                clearTimeout(silenceTimeout);
-                silenceTimeout = setTimeout(() => {
+                clearTimeout(endOfSpeechTimeout);
+                endOfSpeechTimeout = setTimeout(() => {
                     if (isListening) {
                         stopListening();
                         const currentTranscript = userTranscript.textContent.trim();
@@ -1239,6 +1278,7 @@
                                 if (isInterviewActive) {
                                     userTranscript.textContent = translations[currentLang].transcript_placeholder;
                                     startListening();
+                                    startNoResponseTimer();
                                 }
                             });
                         }
@@ -1252,8 +1292,8 @@
                 let errorKey = 'An unknown error occurred.';
                 if (e.error === 'network') errorKey = 'status_network_error';
                 else if (e.error === 'no-speech' && isInterviewActive) {
-                    speak(translations[currentLang].status_no_speech, () => { if(isInterviewActive) startListening(); });
-                    return;
+                    // This is handled by the noResponseTimeout now, so we can ignore this specific error
+                    return; 
                 } 
                 else if (e.error === 'audio-capture' || e.error === 'not-allowed') errorKey = 'status_mic_error';
                 updateStatus(errorKey, 'error');
