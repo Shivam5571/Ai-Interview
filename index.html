@@ -344,7 +344,7 @@
                         <div>
                             <div class="flex justify-between items-center mb-2">
                                 <label for="jobDescription" class="block text-sm font-medium text-gray-300" data-lang-key="job_desc_label">Job Description</label>
-                                <button id="generateDescBtn" class="text-sm text-indigo-400 hover:text-indigo-300 font-semibold" data-lang-key="generate_desc_btn">Generate Description ✨</button>
+                                <button id="generateDescBtn" class="text-sm text-indigo-400 hover:text-indigo-300 font-semibold" data-lang-key="generate_desc_btn">Generate Description</button>
                             </div>
                             <textarea id="jobDescription" rows="6" class="form-textarea w-full" data-lang-key="job_desc_placeholder" placeholder="Paste job description here..."></textarea>
                         </div>
@@ -423,7 +423,7 @@
                         </div>
 
                         <!-- Hint Button -->
-                        <button id="hintBtn" class="w-full btn-secondary text-white font-bold py-3 px-4 rounded-lg hidden" data-lang-key="hint_btn">Hint Chahiye? ✨</button>
+                        <button id="hintBtn" class="w-full btn-secondary text-white font-bold py-3 px-4 rounded-lg hidden" data-lang-key="hint_btn">Hint Chahiye?</button>
 
                         <!-- Feedback Card -->
                         <div id="feedbackContainer" class="glass-card p-6 flex-col flex-grow min-h-0 hidden">
@@ -547,8 +547,8 @@
 
         // --- Translation Strings ---
         const translations = {
-            en: { main_title: "AI Interview Coach", tagline: "Practice for your dream job.", select_language: "Interview Language", job_title_label: "Job Title", job_desc_label: "Job Description", generate_desc_btn: "Generate Description ✨", job_desc_placeholder: "Paste job description here...", difficulty_label: "Difficulty Level", difficulty_easy: "Easy", difficulty_medium: "Medium", difficulty_hard: "Hard", start_btn: "Start Practice", interview_in_progress: "Interview in Progress...", ai_question_label: "AI COACH", your_answer_label: "Your Answer", status_waiting: "Waiting to start...", transcript_placeholder: "Your spoken answer will appear here...", feedback_label: "Feedback", hint_btn: "Need a Hint? ✨", end_btn: "End Interview", summary_title: "Interview Summary Report", summary_tagline: "A detailed analysis of your performance.", summary_generating: "Generating your report...", restart_btn: "Start New Interview", status_listening: "Listening...", status_processing: "Processing...", status_thinking: "AI Coach is thinking...", status_generating_desc: "Generating description...", status_generating_hint: "Preparing a hint...", status_ready: "Ready", status_mic_error: "Mic error. Check permissions.", status_network_error: "Network error. Check connection.", status_no_speech: "Didn't hear that. Please repeat.", alert_no_jd: "Please enter a job description to start.", alert_no_title_for_jd: "Please enter a job title to generate a description.", video_permission_error: "Camera access denied. Please allow camera and microphone access in your browser settings.", reminder_no_response: "I'm waiting for your answer. You can start speaking now.", ending_interview_silence: "Since there's no response, I'll be ending this interview session. Feel free to start a new one anytime!" },
-            hi: { main_title: "AI Interview Coach", tagline: "Apne dream job ke liye practice karein.", select_language: "Interview Language", job_title_label: "Job Title", job_desc_label: "Job Description", generate_desc_btn: "Description Generate Karein ✨", job_desc_placeholder: "Job description yahan paste karein...", difficulty_label: "Difficulty Level", difficulty_easy: "Easy", difficulty_medium: "Medium", difficulty_hard: "Hard", start_btn: "Practice Shuru Karein", interview_in_progress: "Interview chal raha hai...", ai_question_label: "AI COACH", your_answer_label: "Aapka Jawab", status_waiting: "Start hone ka wait hai...", transcript_placeholder: "Aapka bola hua jawab yahan dikhega...", feedback_label: "Feedback", hint_btn: "Hint Chahiye? ✨", end_btn: "Interview End Karein", summary_title: "Interview Summary Report", summary_tagline: "Aapke performance ka detailed analysis.", summary_generating: "Aapki report generate ho rahi hai...", restart_btn: "Naya Interview Start Karein", status_listening: "Suna ja raha hai...", status_processing: "Process ho raha hai...", status_thinking: "AI Coach soch raha hai...", status_generating_desc: "Description generate ho rahi hai...", status_generating_hint: "Hint taiyaar ho raha hai...", status_ready: "Ready", status_mic_error: "Mic error. Permissions check karein.", status_network_error: "Network error. Connection check karein.", status_no_speech: "Kuch sunai nahi diya. Please repeat karein.", alert_no_jd: "Start karne ke liye please job description dalein.", alert_no_title_for_jd: "Description generate karne ke liye please job title dalein.", video_permission_error: "Camera access nahi mila. Please browser settings mein camera aur microphone access allow karein.", reminder_no_response: "Main aapke jawab ka intezaar kar raha hoon. Aap ab bol sakte hain.", ending_interview_silence: "Koi jawab na milne par, main is interview ko abhi ke liye end kar raha hoon. Aap jab chahein naya interview shuru kar sakte hain!" }
+            en: { main_title: "AI Interview Coach", tagline: "Practice for your dream job.", select_language: "Interview Language", job_title_label: "Job Title", job_desc_label: "Job Description", generate_desc_btn: "Generate Description", job_desc_placeholder: "Paste job description here...", difficulty_label: "Difficulty Level", difficulty_easy: "Easy", difficulty_medium: "Medium", difficulty_hard: "Hard", start_btn: "Start Practice", interview_in_progress: "Interview in Progress...", ai_question_label: "AI COACH", your_answer_label: "Your Answer", status_waiting: "Waiting to start...", transcript_placeholder: "Your spoken answer will appear here...", feedback_label: "Feedback", hint_btn: "Need a Hint?", end_btn: "End Interview", summary_title: "Interview Summary Report", summary_tagline: "A detailed analysis of your performance.", summary_generating: "Generating your report...", restart_btn: "Start New Interview", status_listening: "Listening...", status_processing: "Processing...", status_thinking: "AI Coach is thinking...", status_generating_desc: "Generating description...", status_generating_hint: "Preparing a hint...", status_ready: "Ready", status_mic_error: "Mic error. Check permissions.", status_network_error: "Network error. Check connection.", status_no_speech: "Didn't hear that. Please repeat.", alert_no_jd: "Please enter a job description to start.", alert_no_title_for_jd: "Please enter a job title to generate a description.", video_permission_error: "Camera access denied. Please allow camera and microphone access in your browser settings.", reminder_no_response: "I'm waiting for your answer. You can start speaking now.", ending_interview_silence: "Since there's no response, I'll be ending this interview session. Feel free to start a new one anytime!" },
+            hi: { main_title: "AI Interview Coach", tagline: "Apne dream job ke liye practice karein.", select_language: "Interview Language", job_title_label: "Job Title", job_desc_label: "Job Description", generate_desc_btn: "Description Generate Karein", job_desc_placeholder: "Job description yahan paste karein...", difficulty_label: "Difficulty Level", difficulty_easy: "Easy", difficulty_medium: "Medium", difficulty_hard: "Hard", start_btn: "Practice Shuru Karein", interview_in_progress: "Interview chal raha hai...", ai_question_label: "AI COACH", your_answer_label: "Aapka Jawab", status_waiting: "Start hone ka wait hai...", transcript_placeholder: "Aapka bola hua jawab yahan dikhega...", feedback_label: "Feedback", hint_btn: "Hint Chahiye?", end_btn: "Interview End Karein", summary_title: "Interview Summary Report", summary_tagline: "Aapke performance ka detailed analysis.", summary_generating: "Aapki report generate ho rahi hai...", restart_btn: "Naya Interview Start Karein", status_listening: "Suna ja raha hai...", status_processing: "Process ho raha hai...", status_thinking: "AI Coach soch raha hai...", status_generating_desc: "Description generate ho rahi hai...", status_generating_hint: "Hint taiyaar ho raha hai...", status_ready: "Ready", status_mic_error: "Mic error. Permissions check karein.", status_network_error: "Network error. Connection check karein.", status_no_speech: "Kuch sunai nahi diya. Please repeat karein.", alert_no_jd: "Start karne ke liye please job description dalein.", alert_no_title_for_jd: "Description generate karne ke liye please job title dalein.", video_permission_error: "Camera access nahi mila. Please browser settings mein camera aur microphone access allow karein.", reminder_no_response: "Main aapke jawab ka intezaar kar raha hoon. Aap ab bol sakte hain.", ending_interview_silence: "Koi jawab na milne par, main is interview ko abhi ke liye end kar raha hoon. Aap jab chahein naya interview shuru kar sakte hain!" }
         };
 
         // --- UI Functions ---
@@ -808,6 +808,7 @@
             interviewTitle.textContent = `${jobTitle || 'Role'} Interview`;
 
             const initialPrompt = `You are an expert, friendly, and encouraging AI Interview Coach named 'Alex'. Your task is to conduct a supportive mock interview entirely in ${languageName}.
+            **IMPORTANT RULE: Do not use any symbols or emojis in any of your responses.**
             Here are your instructions:
             1.  Start with a warm welcome in ${languageName}, introduce yourself as an AI coach, and then ask the very first question. Use simple and easy-to-understand language.
             2.  After I provide an answer, you MUST respond in three parts, separated by "|||".
@@ -845,6 +846,7 @@
             let status = 'Needs Improvement';
 
             const summaryPrompt = `Based on the following interview log, please generate a comprehensive summary report for the user in simple ${currentLang === 'hi' ? 'Hinglish' : 'English'}.
+            **IMPORTANT RULE: Do not use any symbols or emojis in your report.**
             The report MUST start with a single, overall interview status. Choose one from: "Strong Hire", "Good Potential", "Needs Improvement". Wrap this status in a div with an id, like this: <div id="interview-status">Strong Hire</div>.
 
             After the status, the report should have two main sections.
@@ -890,7 +892,7 @@
             generateDescBtn.classList.add('flex', 'items-center', 'justify-center');
             jobDescriptionInput.placeholder = translations[currentLang].status_generating_desc;
             
-            const prompt = `You are an expert HR manager. Write a detailed job description for the following job title: "${jobTitle}". Include typical responsibilities, required skills, and qualifications. The description should be well-formatted and professional. Write the description in English.`;
+            const prompt = `You are an expert HR manager. Write a detailed job description for the following job title: "${jobTitle}". Include typical responsibilities, required skills, and qualifications. The description should be well-formatted and professional. Write the description in English. Do not use any symbols or emojis.`;
             
             try {
                 const description = await callGeminiAPI([{ role: "user", parts: [{ text: prompt }] }], "description");
@@ -914,7 +916,7 @@
             if (!isInterviewActive || !currentQuestion) return;
             hintBtn.disabled = true;
             
-            const prompt = `The user is stuck on the following interview question: "${currentQuestion}". Provide a brief, one-sentence hint in ${currentLang === 'hi' ? 'Hinglish' : 'English'} to help them get started without giving away the full answer. The hint should be encouraging.`;
+            const prompt = `The user is stuck on the following interview question: "${currentQuestion}". Provide a brief, one-sentence hint in ${currentLang === 'hi' ? 'Hinglish' : 'English'} to help them get started without giving away the full answer. The hint should be encouraging. Do not use any symbols or emojis.`;
             const hint = await callGeminiAPI([{ role: "user", parts: [{ text: prompt }] }], "hint");
             
             if (hint) {
