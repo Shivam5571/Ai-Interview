@@ -198,13 +198,20 @@
         .animation-delay-400 { animation-delay: 400ms; }
         .animation-delay-600 { animation-delay: 600ms; }
 
-        /* Hide Scrollbar */
+        /* Custom Scrollbar for a sleeker look */
         .scrollable-content::-webkit-scrollbar {
-            display: none; /* Hide scrollbar for Chrome, Safari and Opera */
+            width: 8px;
         }
-        .scrollable-content {
-            -ms-overflow-style: none;  /* IE and Edge */
-            scrollbar-width: none;  /* Firefox */
+        .scrollable-content::-webkit-scrollbar-track {
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 10px;
+        }
+        .scrollable-content::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 10px;
+        }
+        .scrollable-content::-webkit-scrollbar-thumb:hover {
+            background: rgba(255, 255, 255, 0.3);
         }
     </style>
 </head>
