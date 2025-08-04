@@ -713,11 +713,20 @@
         // --- Core Logic Functions ---
         async function handleInterviewTurn(userAnswer) {
              hintBtn.classList.add('hidden');
-             if(userAnswer) conversationHistory.push({ role: "user", parts: [{ text: userAnswer }] });
-             const aiResponseText = await callGeminiAPI(conversationHistory, "interview");
+             
+             let turnHistory = [...conversationHistory];
+             if(userAnswer) {
+                turnHistory.push({ role: "user", parts: [{ text: userAnswer }] });
+             }
+
+             const aiResponseText = await callGeminiAPI(turnHistory, "interview");
              
              if(aiResponseText){
+                 if(userAnswer) {
+                    conversationHistory.push({ role: "user", parts: [{ text: userAnswer }] });
+                 }
                  conversationHistory.push({ role: "model", parts: [{ text: aiResponseText }] });
+
                  const parts = aiResponseText.split('|||');
                  let feedback = "", idealAnswerPoints = "", nextQuestion = "";
 
@@ -780,10 +789,9 @@
             
             Begin the interview now. Your first response should only contain the welcome and the first question in ${languageName}.`;
             
-            conversationHistory = [];
+            conversationHistory = [{ role: "user", parts: [{ text: initialPrompt }] }];
             interviewLog = [];
-            conversationHistory.push({ role: "user", parts: [{ text: initialPrompt }] });
-            handleInterviewTurn("");
+            handleInterviewTurn(null);
         }
         
         async function endInterview() {
