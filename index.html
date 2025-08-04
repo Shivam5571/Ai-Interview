@@ -626,9 +626,10 @@
         function setupSpeechSynthesis() {
             const voices = speechSynthesis.getVoices();
             englishVoice = voices.find(v => v.lang === 'en-US' && v.name.includes('Google'));
-            hindiVoice = voices.find(v => v.lang === 'hi-IN' && v.name.includes('Google'));
-            if (!englishVoice) englishVoice = voices.find(v => v.lang === 'en-US');
-            if (!hindiVoice) hindiVoice = voices.find(v => v.lang === 'hi-IN');
+            // Prioritize a specific, high-quality female Hindi voice if available
+            hindiVoice = voices.find(v => v.name === 'Google हिन्दी') || 
+                         voices.find(v => v.lang === 'hi-IN' && v.name.includes('Google')) ||
+                         voices.find(v => v.lang === 'hi-IN');
         }
 
         function speak(text, onEndCallback, isReminder = false) {
