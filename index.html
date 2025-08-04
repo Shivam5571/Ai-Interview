@@ -11,6 +11,9 @@
     <!-- Netlify Identity Widget Script -->
     <script type="text/javascript" src="https://identity.netlify.com/v1/netlify-identity-widget.js"></script>
     <style>
+        html {
+            scroll-behavior: smooth;
+        }
         body {
             font-family: 'Inter', sans-serif;
             background-color: #0A091A;
@@ -777,17 +780,17 @@
 
             const initialPrompt = `You are an expert, friendly, and encouraging AI Interview Coach named 'Alex'. Your task is to conduct a supportive mock interview entirely in ${languageName}.
             Here are your instructions:
-            1.  Start with a warm welcome in ${languageName}, introduce yourself as an AI coach, and then ask the very first question.
+            1.  Start with a warm welcome in ${languageName}, introduce yourself as an AI coach, and then ask the very first question. Use simple and easy-to-understand language.
             2.  After I provide an answer, you MUST respond in three parts, separated by "|||".
-            3.  **Part 1: Concise Feedback:** Provide brief (1-2 sentences), positive, and constructive feedback on my answer in ${languageName}.
-            4.  **Part 2: Ideal Answer Points:** Instead of a full ideal answer, provide 2-3 key bullet points for what a strong answer would include. Format these as HTML list items (<li>...</li>). For example: "<li>Mention a specific project...</li><li>Explain the positive outcome...</li>".
-            5.  **Part 3: Next Question:** Ask the next relevant interview question in ${languageName}.
+            3.  **Part 1: Concise Feedback:** Provide brief (1-2 sentences), positive, and constructive feedback on my answer in simple ${languageName}.
+            4.  **Part 2: Ideal Answer Points:** Instead of a full ideal answer, provide 2-3 key bullet points for what a strong answer would include. Format these as HTML list items (<li>...</li>). Keep the points simple and actionable. For example: "<li>Mention a specific project...</li><li>Explain the positive outcome...</li>".
+            5.  **Part 3: Next Question:** Ask the next relevant interview question in simple ${languageName}.
             6.  Maintain a friendly, coaching tone. Ask a mix of technical, behavioral, and situational questions based on the job description and difficulty.
             
             Job Description: "${jobDescription}"
             Difficulty Level: "${difficulty}"
             
-            Begin the interview now. Your first response should only contain the welcome and the first question in ${languageName}.`;
+            Begin the interview now. Your first response should only contain the welcome and the first question in simple ${languageName}.`;
             
             conversationHistory = [{ role: "user", parts: [{ text: initialPrompt }] }];
             interviewLog = [];
@@ -810,7 +813,7 @@
             const jobTitle = jobTitleInput.value.trim() || 'Practice Interview';
             let status = 'Needs Improvement';
 
-            const summaryPrompt = `Based on the following interview log, please generate a comprehensive summary report for the user in ${currentLang === 'hi' ? 'Hinglish' : 'English'}.
+            const summaryPrompt = `Based on the following interview log, please generate a comprehensive summary report for the user in simple ${currentLang === 'hi' ? 'Hinglish' : 'English'}.
             The report MUST start with a single, overall interview status. Choose one from: "Strong Hire", "Good Potential", "Needs Improvement". Wrap this status in a div with an id, like this: <div id="interview-status">Strong Hire</div>.
 
             After the status, the report should have two main sections.
