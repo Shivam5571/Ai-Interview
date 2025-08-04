@@ -461,6 +461,17 @@
                     </button>
                 </div>
             </div>
+
+            <!-- Error Screen -->
+            <div id="errorScreen" class="screen hidden w-full max-w-3xl mx-auto text-center">
+                <div class="glass-card p-8">
+                    <h2 class="text-3xl font-bold text-red-500">Application Error</h2>
+                    <p class="text-gray-300 mt-4">Could not initialize the application. This might be a temporary configuration issue.</p>
+                    <p id="errorMessage" class="text-gray-400 mt-2 text-sm bg-black/20 p-2 rounded-lg"></p>
+                    <button id="reloadBtn" class="btn-primary mt-6">Try Again</button>
+                </div>
+            </div>
+
         </div>
     </main>
 
@@ -487,6 +498,9 @@
         const setupScreen = document.getElementById('setupScreen');
         const interviewScreen = document.getElementById('interviewScreen');
         const summaryScreen = document.getElementById('summaryScreen');
+        const errorScreen = document.getElementById('errorScreen');
+        const errorMessage = document.getElementById('errorMessage');
+        const reloadBtn = document.getElementById('reloadBtn');
 
         const startInterviewHomeBtn = document.getElementById('startInterviewHomeBtn');
         const startInterviewBtn = document.getElementById('startInterviewBtn');
@@ -1033,25 +1047,29 @@
             const modal = document.getElementById('confirmModal');
             document.getElementById('confirmModalTitle').textContent = title;
             document.getElementById('confirmModalText').textContent = text;
-            modal.classList.remove('hidden');
-            modal.classList.add('flex');
-
+            
             const cancelBtn = document.getElementById('confirmCancelBtn');
             const okBtn = document.getElementById('confirmOkBtn');
+
+            const controller = new AbortController();
+            const { signal } = controller;
 
             const close = () => {
                 modal.classList.add('hidden');
                 modal.classList.remove('flex');
-                okBtn.replaceWith(okBtn.cloneNode(true));
-                cancelBtn.replaceWith(cancelBtn.cloneNode(true));
+                controller.abort();
             };
 
-            document.getElementById('confirmCancelBtn').addEventListener('click', close);
-            document.getElementById('confirmOkBtn').addEventListener('click', () => {
+            cancelBtn.addEventListener('click', close, { signal });
+            okBtn.addEventListener('click', () => {
                 onConfirm();
                 close();
-            });
+            }, { signal });
+
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
         }
+
 
         function toggleDrawer(force) {
             const isOpen = force === undefined ? drawer.classList.contains('translate-x-full') : !force;
@@ -1145,72 +1163,62 @@
         }
 
         async function initialize() {
-            // --- Get Firebase config and App ID from global scope ---
-            const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : null;
-            const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
-
-            if (!firebaseConfig) {
-                console.error("Firebase config not found!");
-                headerAuthSection.innerHTML = `<span class="text-red-500 text-sm">Config Error</span>`;
-                return;
-            }
-
-            // --- Initialize Firebase ---
-            app = initializeApp(firebaseConfig);
-            db = getFirestore(app);
-            auth = getAuth(app);
-
-            // --- Handle Authentication ---
-            onAuthStateChanged(auth, user => {
-                updateHeaderUI(user);
-                if (user) {
-                    userId = user.uid;
-                    // Detach any old listener
-                    if (interviewHistoryUnsubscribe) {
-                        interviewHistoryUnsubscribe();
-                    }
-                    // Attach new listener for the logged-in user
-                    const historyCollection = collection(db, 'artifacts', appId, 'users', userId, 'interviews');
-                    const q = query(historyCollection); // You can add orderBy here if you create indexes
-                    interviewHistoryUnsubscribe = onSnapshot(q, (querySnapshot) => {
-                        const history = [];
-                        querySnapshot.forEach((doc) => {
-                            history.push({ id: doc.id, ...doc.data() });
-                        });
-                        // Sort by date descending in memory
-                        history.sort((a, b) => new Date(b.date) - new Date(a.date));
-                        updateDrawerUI(history);
-                    });
-                } else {
-                    userId = null;
-                    // Detach listener on logout
-                    if (interviewHistoryUnsubscribe) {
-                        interviewHistoryUnsubscribe();
-                    }
-                    updateDrawerUI([]); // Clear drawer
-                    resetAppToHome();
-                }
-            });
-
-            // --- Sign in with custom token or anonymously ---
             try {
+                const firebaseConfigStr = typeof __firebase_config !== 'undefined' ? __firebase_config : null;
+                if (!firebaseConfigStr) {
+                    throw new Error("Firebase configuration is missing. The application cannot start.");
+                }
+
+                const firebaseConfig = JSON.parse(firebaseConfigStr);
+                const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+
+                app = initializeApp(firebaseConfig);
+                db = getFirestore(app);
+                auth = getAuth(app);
+
+                onAuthStateChanged(auth, user => {
+                    updateHeaderUI(user);
+                    if (user) {
+                        userId = user.uid;
+                        if (interviewHistoryUnsubscribe) interviewHistoryUnsubscribe();
+                        
+                        const historyCollection = collection(db, 'artifacts', appId, 'users', userId, 'interviews');
+                        const q = query(historyCollection);
+                        interviewHistoryUnsubscribe = onSnapshot(q, (querySnapshot) => {
+                            const history = [];
+                            querySnapshot.forEach((doc) => {
+                                history.push({ id: doc.id, ...doc.data() });
+                            });
+                            history.sort((a, b) => new Date(b.date) - new Date(a.date));
+                            updateDrawerUI(history);
+                        });
+                    } else {
+                        userId = null;
+                        if (interviewHistoryUnsubscribe) interviewHistoryUnsubscribe();
+                        updateDrawerUI([]);
+                        resetAppToHome();
+                    }
+                });
+
                 if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
                     await signInWithCustomToken(auth, __initial_auth_token);
                 } else {
                     await signInAnonymously(auth);
                 }
-            } catch (error) {
-                console.error("Authentication failed:", error);
-                headerAuthSection.innerHTML = `<span class="text-red-500 text-sm">Auth Error</span>`;
-            }
 
-            // --- General App Init ---
-            setLanguage(languageSelector.value);
-            if ('speechSynthesis' in window) {
-                speechSynthesis.onvoiceschanged = setupSpeechSynthesis;
+                setLanguage(languageSelector.value);
+                if ('speechSynthesis' in window) {
+                    speechSynthesis.onvoiceschanged = setupSpeechSynthesis;
+                }
+                updateStatus('status_waiting', 'waiting');
+                showScreen('homeScreen');
+
+            } catch (error) {
+                console.error("Initialization Failed:", error);
+                showScreen('errorScreen');
+                errorMessage.textContent = error.message;
+                reloadBtn.onclick = () => window.location.reload();
             }
-            updateStatus('status_waiting', 'waiting');
-            showScreen('homeScreen');
         }
 
         // --- Event Listeners ---
