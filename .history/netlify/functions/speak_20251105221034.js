@@ -16,7 +16,7 @@ export async function handler(event) {
 
     // 👇  Your two voices
     const voiceIdHinglish = "3AMU7jXQuQa3oRvRqUmb"; // Indian / Hinglish
-    const voiceIdEnglish  = "w2yzW27GeWlJ26peMH9t"; // Neutral English
+    const voiceIdEnglish  = "TxGEqnHWrfWFTfGW9XjX"; // Neutral English
 
     // Choose based on selected language
     const chosenVoice = lang === "english" ? voiceIdEnglish : voiceIdHinglish;
