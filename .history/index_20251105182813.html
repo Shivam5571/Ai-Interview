@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Interview Coach</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- Netlify Identity Widget -->
+    <script type="text/javascript" src="https://identity.netlify.com/v1/netlify-identity-widget.js"></script>
+    <!-- PDF.js & JSZip for Resume Reading -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    
+    <style>
+        html { scroll-behavior: smooth; }
+        body { font-family: 'Inter', sans-serif; background-color: #0A091A; color: #E0E0E0; }
+        #background-gradient {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background-image:
+                radial-gradient(at 20% 20%, hsla(224, 82%, 57%, 0.2) 0px, transparent 50%),
+                radial-gradient(at 80% 20%, hsla(283, 72%, 52%, 0.2) 0px, transparent 50%),
+                radial-gradient(at 20% 80%, hsla(333, 72%, 52%, 0.2) 0px, transparent 50%),
+                radial-gradient(at 80% 80%, hsla(173, 72%, 52%, 0.2) 0px, transparent 50%);
+            z-index: -1;
+        }
+        .glass-card { background: rgba(17, 24, 39, 0.75); backdrop-filter: blur(20px); border-radius: 1.5rem; border: 1px solid rgba(255, 255, 255, 0.1); }
+        .btn-primary { background: #4f46e5; color: white; font-weight: 600; border-radius: 0.75rem; padding: 0.875rem 1.5rem; transition: all 0.3s; box-shadow: 0 0 20px -5px rgba(79,70,229,0.5); }
+        .btn-primary:hover { transform: translateY(-3px); background: #5a52d6; box-shadow: 0 0 30px -5px rgba(79,70,229,0.8); }
+        .form-input, .form-select, .form-textarea {
+            background-color: rgba(0, 0, 0, 0.2); border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 0.75rem; padding: 0.875rem; color: #E0E0E0; transition: 0.2s;
+        }
+        .form-input:focus, .form-select:focus, .form-textarea:focus {
+            outline: none; border-color: #4f46e5; box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.5);
+        }
+        .start-interview-home-btn {
+            border: 2px solid #3b82f6; color: #e0e0e0; padding: 0.75rem 2rem; border-radius: 9999px;
+            font-weight: 600; transition: all 0.2s;
+        }
+        .start-interview-home-btn:hover { background-color: #3b82f6; color: white; }
+    </style>
+</head>
+
+<body class="flex flex-col h-screen">
+<div id="background-gradient"></div>
+
+<!-- HEADER -->
+<header class="w-full max-w-7xl mx-auto py-4 px-4 flex justify-between items-center text-white">
+    <h1 class="text-xl font-bold">Interview Mok-Ai</h1>
+    <div id="header-auth-section"></div>
+</header>
+
+<main class="flex-grow p-4 overflow-y-auto">
+<div id="app" class="w-full">
+
+<!-- HOME SCREEN -->
+<div id="homeScreen" class="text-center py-16">
+    <h2 class="text-5xl font-extrabold text-white">Interview Mok-Ai</h2>
+    <p class="text-2xl font-semibold text-gray-300 mt-2">Crack Your Next Interview With Confidence</p>
+    <button id="startInterviewHomeBtn" class="start-interview-home-btn mt-10">Start Interview</button>
+</div>
+
+<!-- SETUP SCREEN -->
+<div id="setupScreen" class="hidden w-full max-w-3xl mx-auto py-12">
+    <div class="glass-card p-8 space-y-6">
+        <div class="text-center">
+            <h1 class="text-4xl font-extrabold text-white">AI Interview Coach</h1>
+            <p class="text-gray-400 mt-2">Practice for your dream job.</p>
+        </div>
+        <div class="space-y-4">
+
+            <div>
+                <label class="block text-sm mb-2">Interview Language</label>
+                <select id="languageSelector" class="form-select w-full">
+                    <option value="en">English</option>
+                    <option value="hi">Hinglish</option>
+                </select>
+            </div>
+
+            <div>
+                <label class="block text-sm mb-2">Job Title</label>
+                <input type="text" id="jobTitle" class="form-input w-full" placeholder="e.g., Software Engineer">
+            </div>
+
+            <div>
+                <label class="block text-sm mb-2">Job Description</label>
+                <textarea id="jobDescription" rows="5" class="form-textarea w-full" placeholder="Paste job description here..."></textarea>
+            </div>
+
+            <!-- ✅ Resume Upload Feature -->
+            <div>
+                <label for="resumeUpload" class="block text-sm font-medium text-gray-300 mb-2">Upload Resume (Optional)</label>
+                <input type="file" id="resumeUpload" accept=".pdf,.doc,.docx" class="form-input w-full cursor-pointer">
+                <p class="text-xs text-gray-400 mt-2">Supported: PDF, DOCX. Used for personalized questions.</p>
+                <div id="resumeStatus" class="text-xs text-indigo-400 mt-2 hidden">Resume uploaded successfully ✅</div>
+            </div>
+
+            <div>
+                <label class="block text-sm mb-2">Difficulty Level</label>
+                <select id="difficulty" class="form-select w-full">
+                    <option value="Easy">Easy</option>
+                    <option value="Medium" selected>Medium</option>
+                    <option value="Hard">Hard</option>
+                </select>
+            </div>
+        </div>
+
+        <button id="startInterviewBtn" class="w-full btn-primary mt-4">Start Practice</button>
+    </div>
+</div>
+
+<!-- Placeholder for Interview / Summary Screens -->
+<div id="interviewScreen" class="hidden text-center py-16 text-gray-300">
+    <h2>Interview in Progress...</h2>
+</div>
+<div id="summaryScreen" class="hidden text-center py-16 text-gray-300">
+    <h2>Interview Summary</h2>
+</div>
+
+</div>
+</main>
+
+<footer class="text-center p-4 text-gray-500 text-sm">
+    <p>&copy; 2025 AI Interview Coach. All Rights Reserved.</p>
+</footer>
+
+<script>
+const startInterviewHomeBtn = document.getElementById('startInterviewHomeBtn');
+const startInterviewBtn = document.getElementById('startInterviewBtn');
+const languageSelector = document.getElementById('languageSelector');
+const jobTitleInput = document.getElementById('jobTitle');
+const jobDescriptionInput = document.getElementById('jobDescription');
+const difficultyInput = document.getElementById('difficulty');
+const resumeUpload = document.getElementById('resumeUpload');
+const resumeStatus = document.getElementById('resumeStatus');
+const homeScreen = document.getElementById('homeScreen');
+const setupScreen = document.getElementById('setupScreen');
+let resumeText = "";
+
+// --- Resume Upload Logic ---
+resumeUpload.addEventListener('change', async (event) => {
+    const file = event.target.files[0];
+    if (!file) return;
+    const fileType = file.type;
+
+    if (fileType === "application/pdf") {
+        resumeText = await extractTextFromPDF(file);
+    } else if (
+        fileType === "application/vnd.openxmlformats-officedocument.wordprocessingml.document" ||
+        file.name.endsWith(".docx")
+    ) {
+        resumeText = await extractTextFromDOCX(file);
+    } else {
+        alert("Please upload a PDF or DOCX file only.");
+        return;
+    }
+
+    if (resumeText.length > 50) {
+        resumeStatus.classList.remove('hidden');
+        resumeStatus.textContent = "Resume uploaded successfully ✅";
+    } else {
+        resumeStatus.classList.remove('hidden');
+        resumeStatus.textContent = "Unable to read resume properly ❌";
+    }
+});
+
+// --- PDF Extraction ---
+async function extractTextFromPDF(file) {
+    return new Promise((resolve) => {
+        const reader = new FileReader();
+        reader.onload = async function() {
+            const typedArray = new Uint8Array(this.result);
+            try {
+                const pdf = await pdfjsLib.getDocument({ data: typedArray }).promise;
+                let text = "";
+                for (let i = 1; i <= pdf.numPages; i++) {
+                    const page = await pdf.getPage(i);
+                    const content = await page.getTextContent();
+                    const strings = content.items.map(item => item.str);
+                    text += strings.join(" ") + "\n";
+                }
+                resolve(text);
+            } catch (e) {
+                console.error("Error reading PDF:", e);
+                resolve("");
+            }
+        };
+        reader.readAsArrayBuffer(file);
+    });
+}
+
+// --- DOCX Extraction ---
+async function extractTextFromDOCX(file) {
+    return new Promise((resolve) => {
+        const reader = new FileReader();
+        reader.onload = function(event) {
+            const zip = new JSZip();
+            zip.loadAsync(event.target.result)
+                .then(zip => zip.file("word/document.xml").async("string"))
+                .then(xml => {
+                    const parser = new DOMParser();
+                    const doc = parser.parseFromString(xml, "application/xml");
+                    const paragraphs = Array.from(doc.getElementsByTagName("w:t"));
+                    const text = paragraphs.map(p => p.textContent).join(" ");
+                    resolve(text);
+                })
+                .catch(err => {
+                    console.error("Error reading DOCX:", err);
+                    resolve("");
+                });
+        };
+        reader.readAsArrayBuffer(file);
+    });
+}
+
+// --- Navigation & Start Logic ---
+startInterviewHomeBtn.addEventListener('click', () => {
+    homeScreen.classList.add('hidden');
+    setupScreen.classList.remove('hidden');
+});
+
+startInterviewBtn.addEventListener('click', () => {
+    const jobTitle = jobTitleInput.value.trim() || "Candidate";
+    const jobDescription = jobDescriptionInput.value.trim() || "General interview";
+    const difficulty = difficultyInput.value;
+    const lang = languageSelector.value === 'hi' ? 'Hinglish' : 'English';
+
+    let finalPrompt = `
+You are an AI Interview Coach conducting a mock interview in ${lang}.
+Job Title: "${jobTitle}"
+Job Description: "${jobDescription}"
+Resume Summary: "${resumeText ? resumeText.substring(0, 2000) : 'No resume uploaded'}"
+Difficulty: "${difficulty}"
+
+Start with a warm greeting and then ask the first relevant question based on resume and job description.
+`;
+
+    console.log("🧠 Final Interview Prompt:\n", finalPrompt);
+    alert("Interview will start now.\n(Resume-based questions enabled)");
+});
+</script>
+</body>
+</html>

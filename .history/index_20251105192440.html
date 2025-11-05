@@ -1,0 +1,674 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI Interview Coach</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<!-- Netlify Identity Widget Script -->
+<script type="text/javascript" src="https://identity.netlify.com/v1/netlify-identity-widget.js"></script>
+<!-- PDF.js for PDF text extraction -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
+<!-- Mammoth for DOCX extraction -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.4.14/mammoth.browser.min.js"></script>
+
+
+<style>
+html { scroll-behavior: smooth; }
+body { font-family: 'Inter', sans-serif; background-color: #0A091A; color: #E0E0E0; }
+#background-gradient { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-image: radial-gradient(at 20% 20%, hsla(224,82%,57%,0.2) 0px, transparent 50%), radial-gradient(at 80% 20%, hsla(283,72%,52%,0.2) 0px, transparent 50%), radial-gradient(at 20% 80%, hsla(333,72%,52%,0.2) 0px, transparent 50%), radial-gradient(at 80% 80%, hsla(173,72%,52%,0.2) 0px, transparent 50%); z-index: -1; }
+.screen { transition: opacity 0.5s ease-in-out, transform 0.5s ease-in-out; width: 100%; }
+.screen.hidden { display: none; }
+.glass-card { background: rgba(17,24,39,0.75); backdrop-filter: blur(20px); border: 1px solid rgba(255,255,255,0.1); border-radius: 1.5rem; box-shadow: 0 8px 32px 0 rgba(0,0,0,0.37); }
+.btn-primary { background: #4f46e5; color: white; font-weight: 600; border-radius: 0.75rem; padding: 0.875rem 1.5rem; transition: all 0.3s ease; box-shadow: 0 0 20px -5px rgba(79,70,229,0.5); }
+.btn-primary:hover { transform: translateY(-3px); background: #5a52d6; box-shadow: 0 0 30px -5px rgba(79,70,229,0.8); }
+.btn-danger { background: #dc2626; color: white; font-weight: 600; border-radius: 0.75rem; padding: 0.875rem 1.5rem; transition: all 0.3s ease; box-shadow: 0 0 20px -5px rgba(220,38,38,0.5); }
+.btn-danger:hover { transform: translateY(-3px); background: #b91c1c; box-shadow: 0 0 30px -5px rgba(220,38,38,0.8); }
+.btn-secondary { background-color: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); transition: background-color 0.3s ease; }
+.btn-secondary:hover { background-color: rgba(255,255,255,0.15); }
+.form-input, .form-select, .form-textarea { background-color: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.1); border-radius: 0.75rem; padding: 0.875rem; transition: all 0.2s ease; color: #E0E0E0; }
+.form-input:focus, .form-select:focus, .form-textarea:focus { outline: none; border-color: #4f46e5; box-shadow: 0 0 0 3px rgba(79,70,229,0.5); }
+input:-webkit-autofill, input:-webkit-autofill:hover, input:-webkit-autofill:focus, input:-webkit-autofill:active { -webkit-box-shadow: 0 0 0 30px #111827 inset !important; -webkit-text-fill-color: #E0E0E0 !important; }
+.form-select option { background: #111827; }
+#summaryContent h2 { font-size: 1.5rem; font-weight: 700; color: #4f46e5; margin-bottom: 1rem; border-bottom: 1px solid rgba(255,255,255,0.2); padding-bottom: 0.5rem; }
+#summaryContent h3 { font-size: 1.125rem; font-weight: 600; color: #E0E0E0; margin-top: 1.5rem; margin-bottom: 0.75rem; }
+#summaryContent p { color: #A0A0A0; }
+#summaryContent strong { color: #C0C0C0; }
+#summaryContent ul { list-style-type: disc; padding-left: 1.5rem; }
+#summaryContent .summary-block { background-color: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.1); padding: 1rem; border-radius: 1rem; margin-bottom: 1rem;}
+#drawer { transition: transform 0.3s ease-in-out; }
+#drawer-backdrop { transition: opacity 0.3s ease-in-out; }
+#drawer-content { padding: 0; }
+.drawer-card { box-shadow: 0 -10px 20px -5px rgba(0,0,0,0.2); flex-grow: 1; overflow-y: auto; }
+#interview-history-list li:hover { background-color: #f3f4f6; }
+.header-login-btn { border: 2px solid #3b82f6; color: #e0e0e0; padding: 0.5rem 1.5rem; border-radius: 9999px; font-weight: 500; transition: all 0.2s ease; }
+.header-login-btn:hover { background-color: #3b82f6; color: white; }
+.feature-item { color: #9ca3af; transition: color 0.2s ease; }
+.feature-item:hover { color: #3b82f6; }
+.feature-item svg { width: 4rem; height: 4rem; margin-bottom: 1rem; }
+.start-interview-home-btn { border: 2px solid #3b82f6; color: #e0e0e0; padding: 0.75rem 2rem; border-radius: 9999px; font-weight: 600; transition: all 0.2s ease; }
+.start-interview-home-btn:hover { background-color: #3b82f6; color: white; }
+.video-container video { width: 100%; height: 100%; object-fit: cover; transition: all 0.5s ease-in-out; }
+#userVideoContainer { position: absolute; bottom: 1rem; right: 1rem; width: 128px; height: 128px; border-radius: 9999px; overflow: hidden; border: 2px solid rgba(255,255,255,0.5); cursor: pointer; z-index: 10; transition: all 0.5s ease-in-out; }
+#userVideoContainer video { transform: scaleX(-1); border-radius: 9999px; }
+#aiVideoContainer { position: absolute; top: 0; left: 0; width: 100%; height: 100%; transition: all 0.5s ease-in-out; border-radius: 1rem; overflow: hidden; background-color: #1a1a2e; }
+#aiVideoContainer video { border-radius: 1rem; }
+.swapped #userVideoContainer { width: 100%; height: 100%; border-radius: 1rem; bottom: 0; right: 0; border: none; cursor: default; z-index: 0; }
+.swapped #userVideoContainer video { border-radius: 1rem; }
+.swapped #aiVideoContainer { width: 128px; height: 128px; border-radius: 9999px; bottom: 1rem; right: 1rem; top: auto; left: auto; border: 2px solid rgba(255,255,255,0.5); cursor: pointer; z-index: 10; }
+.swapped #aiVideoContainer video { border-radius: 9999px; }
+@keyframes fadeInUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+.animated-element { opacity: 0; }
+.animate-fade-in-up { animation: fadeInUp 0.8s ease-out forwards; }
+.animation-delay-200 { animation-delay: 200ms; }
+.animation-delay-400 { animation-delay: 400ms; }
+.animation-delay-600 { animation-delay: 600ms; }
+.scrollable-content::-webkit-scrollbar { display: none; }
+.scrollable-content { -ms-overflow-style: none; scrollbar-width: none; }
+/* Resume upload specific */
+#resumePreview { white-space: pre-wrap; color: #d1d5db; max-height: 180px; overflow-y: auto; }
+#resumeSummary { color: #e6e7ff; }
+</style>
+<script>
+    // === DOM ELEMENTS ===
+const drawer = document.getElementById('drawer');
+const drawerBackdrop = document.getElementById('drawer-backdrop');
+const drawerContent = document.getElementById('drawer-content');
+const headerAuthSection = document.getElementById('header-auth-section');
+
+const featuresModal = document.getElementById('featuresModal');
+const closeFeaturesModalBtn = document.getElementById('closeFeaturesModalBtn');
+
+const homeScreen = document.getElementById('homeScreen');
+const setupScreen = document.getElementById('setupScreen');
+const interviewScreen = document.getElementById('interviewScreen');
+const summaryScreen = document.getElementById('summaryScreen');
+
+const startInterviewHomeBtn = document.getElementById('startInterviewHomeBtn');
+const startInterviewBtn = document.getElementById('startInterviewBtn');
+const endInterviewBtn = document.getElementById('endInterviewBtn');
+const restartBtn = document.getElementById('restartBtn');
+const generateDescBtn = document.getElementById('generateDescBtn');
+const hintBtn = document.getElementById('hintBtn');
+
+const languageSelector = document.getElementById('languageSelector');
+const jobTitleInput = document.getElementById('jobTitle');
+const jobDescriptionInput = document.getElementById('jobDescription');
+const difficultyInput = document.getElementById('difficulty');
+const interviewTitle = document.getElementById('interviewTitle');
+const aiQuestion = document.getElementById('aiQuestion');
+const statusIndicator = document.getElementById('statusIndicator');
+const statusIconContainer = document.getElementById('statusIconContainer');
+const statusText = document.getElementById('statusText');
+const userTranscript = document.getElementById('userTranscript');
+const feedbackContainer = document.getElementById('feedbackContainer');
+const aiFeedback = document.getElementById('aiFeedback');
+const summaryContent = document.getElementById('summaryContent');
+const summaryPlaceholder = document.getElementById('summaryPlaceholder');
+
+const resumeInput = document.getElementById('resumeInput');
+const uploadResumeBtn = document.getElementById('uploadResumeBtn');
+const resumePreview = document.getElementById('resumePreview');
+const resumeSummaryEl = document.getElementById('resumeSummary');
+const useResumeCheckbox = document.getElementById('useResumeCheckbox');
+const regenerateSummaryBtn = document.getElementById('regenerateSummaryBtn');
+
+const mobileMenuButton = document.getElementById('mobile-menu-button');
+const mobileMenu = document.getElementById('mobile-menu');
+const mobileHomeLink = document.getElementById('mobileHomeLink');
+const mobileFeaturesLink = document.getElementById('mobileFeaturesLink');
+const homeLink = document.getElementById('homeLink');
+const featuresLink = document.getElementById('featuresLink');
+
+// === MEDIA ELEMENTS ===
+const micBtn = document.getElementById('micBtn');
+const videoBtn = document.getElementById('videoBtn');
+const videoElement = document.getElementById('videoElement');
+const videoPlaceholder = document.getElementById('videoPlaceholder');
+const aiVideoContainer = document.getElementById('aiVideoContainer');
+const userVideoContainer = document.getElementById('userVideoContainer');
+const videoFeedContainer = document.getElementById('videoFeedContainer');
+const aiAvatarVideo = document.getElementById('aiAvatarVideo');
+
+// === SPEECH + STATE ===
+const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+const recognition = SpeechRecognition ? new SpeechRecognition() : null;
+
+let englishVoice, hindiVoice;
+let conversationHistory = [];
+let interviewLog = [];
+let currentQuestion = "";
+let isListening = false;
+let isInterviewActive = false;
+let currentLang = 'en';
+let loginAndStart = false;
+let userStream = null;
+let isMicOn = true;
+let isVideoOn = true;
+let noResponseCounter = 0;
+let uploadedResumeText = '';
+let uploadedResumeName = '';
+
+const videoStates = {
+  speaking: 'https://storage.googleapis.com/gemini-prod.appspot.com/669f744572522_Professional_Interviewer_Video_Generated.mp4',
+  listening: 'https://videos.pexels.com/video-files/856722/856722-hd_1280_720_25fps.mp4',
+  thinking: 'https://videos.pexels.com/video-files/7578809/7578809-hd_1920_1080_25fps.mp4'
+};
+
+// === TRANSLATIONS ===
+const translations = {
+  en: {
+    main_title: "AI Interview Coach",
+    tagline: "Practice for your dream job.",
+    select_language: "Interview Language",
+    job_title_label: "Job Title",
+    job_desc_label: "Job Description",
+    generate_desc_btn: "Generate Description",
+    job_desc_placeholder: "Paste job description here...",
+    start_btn: "Start Practice",
+    status_waiting: "Waiting to start...",
+    status_listening: "Listening...",
+    status_processing: "Processing...",
+    status_thinking: "AI Coach is thinking...",
+    status_mic_error: "Mic error. Check permissions.",
+    alert_no_jd: "Please enter a job description or upload resume."
+  },
+  hi: {
+    main_title: "AI Interview Coach",
+    tagline: "Apne dream job ke liye practice karein.",
+    select_language: "Interview Language",
+    job_title_label: "Job Title",
+    job_desc_label: "Job Description",
+    generate_desc_btn: "Description Generate Karein",
+    job_desc_placeholder: "Job description yahan paste karein...",
+    start_btn: "Practice Shuru Karein",
+    status_waiting: "Start hone ka wait hai...",
+    status_listening: "Suna ja raha hai...",
+    status_processing: "Process ho raha hai...",
+    status_thinking: "AI Coach soch raha hai...",
+    status_mic_error: "Mic error. Permissions check karein.",
+    alert_no_jd: "Job description ya resume upload karein."
+  }
+};
+// === UI FUNCTIONS ===
+function showScreen(screenId) {
+  document.querySelectorAll('.screen').forEach(screen => {
+    screen.classList.toggle('hidden', screen.id !== screenId);
+  });
+  if (screenId === 'interviewScreen') {
+    document.body.style.overflow = 'hidden';
+  } else {
+    document.body.style.overflow = 'auto';
+  }
+
+  if (screenId === 'homeScreen') {
+    const elements = document.querySelectorAll('#homeScreen .animated-element');
+    elements.forEach(el => {
+      el.classList.remove('animate-fade-in-up');
+      void el.offsetWidth;
+      el.classList.add('animate-fade-in-up');
+    });
+  }
+}
+
+function setLanguage(lang) {
+  currentLang = lang;
+  document.querySelectorAll('[data-lang-key]').forEach(el => {
+    const key = el.getAttribute('data-lang-key');
+    if (translations[lang][key]) {
+      if (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA') {
+        el.placeholder = translations[lang][key];
+      } else {
+        el.textContent = translations[lang][key];
+      }
+    }
+  });
+}
+
+// === STATUS ICONS ===
+const icons = {
+  waiting: `<div class="w-3 h-3 bg-gray-500 rounded-full animate-pulse"></div>`,
+  listening: `<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-green-400 animate-pulse" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M7 4a3 3 0 016 0v4a3 3 0 11-6 0V4zm4 10.93A7.001 7.001 0 0017 8h-1a6 6 0 11-12 0H3a7.001 7.001 0 006 6.93V17H7a1 1 0 100 2h6a1 1 0 100-2h-2v-2.07z" clip-rule="evenodd"/></svg>`,
+  thinking: `<svg class="animate-spin h-5 w-5 text-indigo-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/></svg>`,
+  error: `<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-red-500" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/></svg>`
+};
+
+function updateStatus(key, iconType) {
+  statusText.textContent = translations[currentLang][key] || key;
+  statusIconContainer.innerHTML = icons[iconType] || icons.waiting;
+}
+
+function displayInterviewStatus(status) {
+  const container = document.getElementById('status-display-container');
+  let bgColor = 'bg-gray-500/20', textColor = 'text-gray-300';
+  if (status === 'Strong Hire') { bgColor = 'bg-green-500/20'; textColor = 'text-green-400'; }
+  else if (status === 'Good Potential') { bgColor = 'bg-yellow-500/20'; textColor = 'text-yellow-400'; }
+  else if (status === 'Needs Improvement') { bgColor = 'bg-red-500/20'; textColor = 'text-red-400'; }
+
+  container.innerHTML = `<div class="inline-block px-4 py-2 rounded-full ${bgColor} ${textColor} border border-current">
+  <span class="font-bold">Overall Status:</span> ${status}</div>`;
+}
+
+// === AI + SPEECH UTILITIES ===
+function setupSpeechSynthesis() {
+  const voices = speechSynthesis.getVoices();
+  englishVoice = voices.find(v => v.lang === 'en-US' && v.name.includes('Google')) || voices.find(v => v.lang?.startsWith('en'));
+  hindiVoice = voices.find(v => v.lang === 'hi-IN' && v.name.includes('Google')) || voices.find(v => v.lang?.startsWith('hi'));
+}
+
+function speak(text, onEndCallback, isReminder = false) {
+  const utterance = new SpeechSynthesisUtterance(text);
+  utterance.voice = (currentLang === 'hi' && hindiVoice) ? hindiVoice : englishVoice;
+  utterance.lang = currentLang === 'hi' ? 'hi-IN' : 'en-US';
+  utterance.rate = 0.95;
+  utterance.onstart = () => setAIAvatarState('speaking');
+  utterance.onend = () => { setAIAvatarState('listening'); if (onEndCallback) onEndCallback(); };
+  utterance.onerror = e => console.error("Speech synthesis error:", e.error);
+  window.speechSynthesis.speak(utterance);
+}
+
+// === GEMINI API ===
+async function callGeminiAPI(history, purpose = "interview") {
+  setAIAvatarState('thinking');
+  updateStatus('status_thinking', 'thinking');
+  try {
+    const response = await fetch('/.netlify/functions/gemini', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ history })
+    });
+    if (!response.ok) throw new Error(`API request failed: ${response.status}`);
+    const result = await response.json();
+    return result.candidates?.[0]?.content?.parts?.[0]?.text || null;
+  } catch (err) {
+    console.error("Gemini API Error:", err);
+    updateStatus('status_network_error', 'error');
+    return null;
+  }
+}
+
+// === VIDEO + MIC CONTROLS ===
+async function setupCamera() {
+  try {
+    userStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+    videoElement.srcObject = userStream;
+    videoElement.classList.remove('hidden');
+    videoPlaceholder.classList.add('hidden');
+    isMicOn = true; isVideoOn = true;
+  } catch (err) {
+    alert(translations[currentLang].status_mic_error);
+    console.error("Camera error:", err);
+  }
+}
+
+function toggleMic() {
+  if (!userStream) return;
+  isMicOn = !isMicOn;
+  userStream.getAudioTracks()[0].enabled = isMicOn;
+  micBtn.classList.toggle('bg-red-600', !isMicOn);
+  micBtn.classList.toggle('bg-white/10', isMicOn);
+}
+
+function toggleVideo() {
+  if (!userStream) return;
+  isVideoOn = !isVideoOn;
+  userStream.getVideoTracks()[0].enabled = isVideoOn;
+  videoElement.classList.toggle('hidden', !isVideoOn);
+  videoPlaceholder.classList.toggle('hidden', isVideoOn);
+}
+
+function setAIAvatarState(state) {
+  if (aiAvatarVideo.src !== videoStates[state]) aiAvatarVideo.src = videoStates[state];
+  aiAvatarVideo.play().catch(() => {});
+}
+
+function swapVideoFeeds() {
+  videoFeedContainer.classList.toggle('swapped');
+}
+async function extractTextFromPDF(file) {
+  const arrayBuffer = await file.arrayBuffer();
+  const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+  let fullText = '';
+  for (let i = 1; i <= pdf.numPages; i++) {
+    const page = await pdf.getPage(i);
+    const txt = await page.getTextContent();
+    fullText += txt.items.map(item => item.str).join(' ') + '\n\n';
+  }
+  return fullText.trim();
+}
+
+async function extractTextFromDocx(file) {
+  const arrayBuffer = await file.arrayBuffer();
+  const res = await mammoth.extractRawText({ arrayBuffer });
+  return (res.value || '').trim();
+}
+
+async function extractTextFromTxt(file) {
+  return (await file.text()).trim();
+}
+
+async function handleResumeFile(file) {
+  if (!file) return;
+  uploadedResumeName = file.name;
+  resumePreview.textContent = 'Reading file...';
+  let text = '';
+  const name = file.name.toLowerCase();
+  if (name.endsWith('.pdf')) text = await extractTextFromPDF(file);
+  else if (name.endsWith('.docx') || name.endsWith('.doc')) text = await extractTextFromDocx(file);
+  else text = await extractTextFromTxt(file);
+  uploadedResumeText = text || '';
+  if (uploadedResumeText) {
+    resumePreview.textContent = uploadedResumeText.slice(0, 3000) + (uploadedResumeText.length > 3000 ? '\n\n... (truncated)' : '');
+    await generateResumeSummary();
+  } else {
+    resumePreview.textContent = 'Unable to extract text. Try a different format.';
+    resumeSummaryEl.textContent = 'No summary available.';
+  }
+}
+
+async function generateResumeSummary() {
+  if (!uploadedResumeText) {
+    resumeSummaryEl.textContent = 'No resume loaded.';
+    return;
+  }
+  regenerateSummaryBtn.classList.add('hidden');
+  resumeSummaryEl.textContent = 'Summarizing resume...';
+  const trimmed = uploadedResumeText.slice(0, 20000);
+  const prompt = `Summarize the following resume into:
+1) 2-line professional summary.
+2) Top 5 skills.
+3) Top 3 achievements.
+Use simple English, no emojis.
+
+Resume:
+${trimmed}`;
+  const aiOut = await callGeminiAPI([{ role: 'user', parts: [{ text: prompt }] }], 'description');
+  if (aiOut) {
+    resumeSummaryEl.textContent = aiOut;
+    regenerateSummaryBtn.classList.remove('hidden');
+    saveResumeToLocal();
+  } else {
+    resumeSummaryEl.textContent = 'Summary generation failed.';
+    regenerateSummaryBtn.classList.remove('hidden');
+  }
+}
+
+function saveResumeToLocal() {
+  const user = window.netlifyIdentity?.currentUser?.() || null;
+  const key = user ? `uploadedResume_${user.id}` : 'uploadedResume_guest';
+  const payload = {
+    name: uploadedResumeName,
+    text: uploadedResumeText,
+    summary: resumeSummaryEl.textContent || '',
+    date: new Date().toISOString()
+  };
+  localStorage.setItem(key, JSON.stringify(payload));
+}
+
+function loadResumeFromLocal() {
+  const user = window.netlifyIdentity?.currentUser?.() || null;
+  const key = user ? `uploadedResume_${user.id}` : 'uploadedResume_guest';
+  const raw = localStorage.getItem(key);
+  if (!raw) return;
+  const obj = JSON.parse(raw);
+  uploadedResumeName = obj.name || '';
+  uploadedResumeText = obj.text || '';
+  resumePreview.textContent = uploadedResumeText ? uploadedResumeText.slice(0, 3000) + (uploadedResumeText.length > 3000 ? '\n\n... (truncated)' : '') : 'No resume loaded.';
+  resumeSummaryEl.textContent = obj.summary || 'No summary available.';
+  regenerateSummaryBtn.classList.toggle('hidden', !uploadedResumeText);
+}
+
+uploadResumeBtn.addEventListener('click', async (e) => {
+  e.preventDefault();
+  const file = resumeInput.files?.[0];
+  if (!file) {
+    alert('Please select a resume file first (PDF, DOCX, TXT).');
+    return;
+  }
+  await handleResumeFile(file);
+});
+
+regenerateSummaryBtn.addEventListener('click', async (e) => {
+  e.preventDefault();
+  await generateResumeSummary();
+});
+let endOfSpeechTimeout, noResponseTimeout;
+
+function startListening() {
+  if (!recognition || isListening || !isMicOn) return;
+  isListening = true;
+  recognition.lang = currentLang === 'hi' ? 'hi-IN' : 'en-IN';
+  updateStatus('status_listening', 'listening');
+  recognition.start();
+}
+
+function stopListening() {
+  if (!recognition || !isListening) return;
+  isListening = false;
+  recognition.stop();
+  clearTimeout(endOfSpeechTimeout);
+  clearTimeout(noResponseTimeout);
+  updateStatus('status_processing', 'thinking');
+}
+
+function handleNoResponse() {
+  if (!isInterviewActive) return;
+  noResponseCounter++;
+  if (noResponseCounter >= 3) {
+    speak(translations[currentLang].ending_interview_silence, () => endInterview(), true);
+  } else {
+    speak(translations[currentLang].reminder_no_response, () => {
+      if (isInterviewActive) startNoResponseTimer();
+    }, true);
+  }
+}
+
+function startNoResponseTimer() {
+  clearTimeout(noResponseTimeout);
+  noResponseTimeout = setTimeout(handleNoResponse, 10000);
+}
+
+async function handleInterviewTurn(userAnswer) {
+  clearTimeout(noResponseTimeout);
+  noResponseCounter = 0;
+  hintBtn.classList.add('hidden');
+
+  let turnHistory = [...conversationHistory];
+  if (userAnswer) turnHistory.push({ role: 'user', parts: [{ text: userAnswer }] });
+
+  const aiResponseText = await callGeminiAPI(turnHistory, 'interview');
+  if (!aiResponseText) return;
+
+  if (userAnswer) conversationHistory.push({ role: 'user', parts: [{ text: userAnswer }] });
+  conversationHistory.push({ role: 'model', parts: [{ text: aiResponseText }] });
+
+  const parts = aiResponseText.split('|||');
+  let feedback = '', idealAnswerPoints = '', nextQuestion = '';
+  if (parts.length === 3) {
+    [feedback, idealAnswerPoints, nextQuestion] = parts.map(p => p.trim());
+    if (currentQuestion && userTranscript.textContent !== translations[currentLang].transcript_placeholder) {
+      interviewLog.push({
+        question: currentQuestion,
+        userAnswer: userTranscript.textContent,
+        feedback,
+        idealAnswer: idealAnswerPoints
+      });
+    }
+  } else {
+    nextQuestion = aiResponseText;
+  }
+  currentQuestion = nextQuestion;
+
+  if (feedback) {
+    let feedbackHTML = `<strong>Feedback:</strong><p class="mt-1">${feedback}</p>`;
+    if (idealAnswerPoints)
+      feedbackHTML += `<br><strong>Key Points:</strong><ul class="list-disc pl-5 mt-1">${idealAnswerPoints}</ul>`;
+    aiFeedback.innerHTML = feedbackHTML;
+    feedbackContainer.classList.remove('hidden');
+    feedbackContainer.classList.add('flex');
+  } else {
+    feedbackContainer.classList.add('hidden');
+    feedbackContainer.classList.remove('flex');
+  }
+
+  speak(nextQuestion, () => {
+    if (isInterviewActive) {
+      startListening();
+      startNoResponseTimer();
+    }
+  });
+}
+
+async function startInterview() {
+  const jobTitle = jobTitleInput.value.trim();
+  const jobDescription = jobDescriptionInput.value.trim();
+  const difficulty = difficultyInput.value;
+  const languageName = currentLang === 'hi' ? 'Hinglish' : 'English';
+
+  if (!jobDescription && !uploadedResumeText) {
+    alert(translations[currentLang].alert_no_jd);
+    return;
+  }
+
+  isInterviewActive = true;
+  noResponseCounter = 0;
+  showScreen('interviewScreen');
+  hintBtn.classList.remove('hidden');
+  feedbackContainer.classList.add('hidden');
+  feedbackContainer.classList.remove('flex');
+  await setupCamera();
+  interviewTitle.textContent = `${jobTitle || 'Role'} Interview`;
+
+  let resumePart = '';
+  if (useResumeCheckbox?.checked && uploadedResumeText) {
+    resumePart = `Candidate Resume Summary: "${resumeSummaryEl.textContent}"\nResume Excerpt: "${uploadedResumeText.slice(0, 2000)}"`;
+  }
+
+  const initialPrompt = `
+You are an expert and friendly AI Interview Coach named 'Alex'. Conduct the mock interview entirely in ${languageName}.
+Rules:
+1. Start with a warm welcome, introduce yourself, then ask the first question.
+2. After every answer, respond in 3 parts separated by "|||":
+   Part 1: Feedback (1–2 lines)
+   Part 2: Key Points (2–3 <li> list items)
+   Part 3: Next Question.
+3. Be encouraging, simple, and clear.
+4. Base questions on this info:
+Job Title: "${jobTitle}"
+Job Description: "${jobDescription}"
+${resumePart}
+Difficulty Level: "${difficulty}"
+Begin now with the greeting and first question only.
+`;
+
+  conversationHistory = [{ role: 'user', parts: [{ text: initialPrompt }] }];
+  interviewLog = [];
+  handleInterviewTurn(null);
+}
+
+async function endInterview() {
+  isInterviewActive = false;
+  stopListening();
+  window.speechSynthesis.cancel();
+  clearTimeout(noResponseTimeout);
+  clearTimeout(endOfSpeechTimeout);
+
+  if (userStream) {
+    userStream.getTracks().forEach(t => t.stop());
+    userStream = null;
+  }
+
+  videoElement.classList.add('hidden');
+  videoPlaceholder.classList.remove('hidden');
+  aiAvatarVideo.pause();
+
+  const jobTitle = jobTitleInput.value.trim() || 'Practice Interview';
+  let status = 'Needs Improvement';
+  const summaryPrompt = `
+Generate a structured interview summary.
+Start with <div id="interview-status">STATUS</div> using one of: Strong Hire, Good Potential, Needs Improvement.
+Then two sections:
+1. <h2>Overall Performance</h2> short analysis.
+2. <h2>Question Breakdown</h2> each question with feedback + ideal answer.
+Interview Log: ${JSON.stringify(interviewLog, null, 2)}
+`;
+
+  showScreen('summaryScreen');
+  summaryPlaceholder.style.display = 'flex';
+  summaryContent.innerHTML = '';
+  summaryContent.appendChild(summaryPlaceholder);
+
+  const summaryHTML = await callGeminiAPI([{ role: 'user', parts: [{ text: summaryPrompt }] }], 'summary');
+  if (!summaryHTML) {
+    summaryContent.innerHTML = '<p class="text-red-400">Error generating summary.</p>';
+    return;
+  }
+
+  summaryPlaceholder.style.display = 'none';
+  const tempDiv = document.createElement('div');
+  tempDiv.innerHTML = summaryHTML;
+  const statusElement = tempDiv.querySelector('#interview-status');
+  if (statusElement) {
+    status = statusElement.textContent.trim();
+    displayInterviewStatus(status);
+    statusElement.remove();
+  }
+  const finalSummaryHTML = tempDiv.innerHTML;
+  summaryContent.innerHTML = finalSummaryHTML;
+  saveInterviewToHistory({
+    title: jobTitle,
+    date: new Date().toISOString(),
+    status,
+    summary: finalSummaryHTML
+  });
+}
+
+// === Recognition Events ===
+if (recognition) {
+  recognition.onresult = (e) => {
+    clearTimeout(noResponseTimeout);
+    noResponseCounter = 0;
+    let finalTranscript = '';
+    for (let i = e.resultIndex; i < e.results.length; ++i) {
+      if (e.results[i].isFinal) finalTranscript += e.results[i][0].transcript;
+    }
+    if (finalTranscript) userTranscript.textContent = finalTranscript;
+    clearTimeout(endOfSpeechTimeout);
+    endOfSpeechTimeout = setTimeout(() => {
+      if (isListening) {
+        stopListening();
+        const currentTranscript = userTranscript.textContent.trim();
+        if (currentTranscript && currentTranscript !== translations[currentLang].transcript_placeholder) {
+          handleInterviewTurn(currentTranscript);
+        } else {
+          speak(translations[currentLang].status_no_speech, () => {
+            if (isInterviewActive) {
+              userTranscript.textContent = translations[currentLang].transcript_placeholder;
+              startListening();
+              startNoResponseTimer();
+            }
+          });
+        }
+      }
+    }, 4000);
+  };
+
+  recognition.onerror = (e) => {
+    isListening = false;
+    if (e.error === 'network') updateStatus('status_network_error', 'error');
+    else if (e.error === 'audio-capture' || e.error === 'not-allowed')
+      updateStatus('status_mic_error', 'error');
+  };
+
+  recognition.onend = () => {
+    if (isInterviewActive && isListening) startListening();
+    else isListening = false;
+  };
+}
+
+
+</script>
+</html>

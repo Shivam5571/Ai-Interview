@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI Interview Coach</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<!-- Netlify Identity Widget Script -->
+<script type="text/javascript" src="https://identity.netlify.com/v1/netlify-identity-widget.js"></script>
+<!-- PDF.js for PDF text extraction -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
+<!-- Mammoth for DOCX extraction -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.4.14/mammoth.browser.min.js"></script>
+
+
+<style>
+html { scroll-behavior: smooth; }
+body { font-family: 'Inter', sans-serif; background-color: #0A091A; color: #E0E0E0; }
+#background-gradient { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-image: radial-gradient(at 20% 20%, hsla(224,82%,57%,0.2) 0px, transparent 50%), radial-gradient(at 80% 20%, hsla(283,72%,52%,0.2) 0px, transparent 50%), radial-gradient(at 20% 80%, hsla(333,72%,52%,0.2) 0px, transparent 50%), radial-gradient(at 80% 80%, hsla(173,72%,52%,0.2) 0px, transparent 50%); z-index: -1; }
+.screen { transition: opacity 0.5s ease-in-out, transform 0.5s ease-in-out; width: 100%; }
+.screen.hidden { display: none; }
+.glass-card { background: rgba(17,24,39,0.75); backdrop-filter: blur(20px); border: 1px solid rgba(255,255,255,0.1); border-radius: 1.5rem; box-shadow: 0 8px 32px 0 rgba(0,0,0,0.37); }
+.btn-primary { background: #4f46e5; color: white; font-weight: 600; border-radius: 0.75rem; padding: 0.875rem 1.5rem; transition: all 0.3s ease; box-shadow: 0 0 20px -5px rgba(79,70,229,0.5); }
+.btn-primary:hover { transform: translateY(-3px); background: #5a52d6; box-shadow: 0 0 30px -5px rgba(79,70,229,0.8); }
+.btn-danger { background: #dc2626; color: white; font-weight: 600; border-radius: 0.75rem; padding: 0.875rem 1.5rem; transition: all 0.3s ease; box-shadow: 0 0 20px -5px rgba(220,38,38,0.5); }
+.btn-danger:hover { transform: translateY(-3px); background: #b91c1c; box-shadow: 0 0 30px -5px rgba(220,38,38,0.8); }
+.btn-secondary { background-color: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); transition: background-color 0.3s ease; }
+.btn-secondary:hover { background-color: rgba(255,255,255,0.15); }
+.form-input, .form-select, .form-textarea { background-color: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.1); border-radius: 0.75rem; padding: 0.875rem; transition: all 0.2s ease; color: #E0E0E0; }
+.form-input:focus, .form-select:focus, .form-textarea:focus { outline: none; border-color: #4f46e5; box-shadow: 0 0 0 3px rgba(79,70,229,0.5); }
+input:-webkit-autofill, input:-webkit-autofill:hover, input:-webkit-autofill:focus, input:-webkit-autofill:active { -webkit-box-shadow: 0 0 0 30px #111827 inset !important; -webkit-text-fill-color: #E0E0E0 !important; }
+.form-select option { background: #111827; }
+#summaryContent h2 { font-size: 1.5rem; font-weight: 700; color: #4f46e5; margin-bottom: 1rem; border-bottom: 1px solid rgba(255,255,255,0.2); padding-bottom: 0.5rem; }
+#summaryContent h3 { font-size: 1.125rem; font-weight: 600; color: #E0E0E0; margin-top: 1.5rem; margin-bottom: 0.75rem; }
+#summaryContent p { color: #A0A0A0; }
+#summaryContent strong { color: #C0C0C0; }
+#summaryContent ul { list-style-type: disc; padding-left: 1.5rem; }
+#summaryContent .summary-block { background-color: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.1); padding: 1rem; border-radius: 1rem; margin-bottom: 1rem;}
+#drawer { transition: transform 0.3s ease-in-out; }
+#drawer-backdrop { transition: opacity 0.3s ease-in-out; }
+#drawer-content { padding: 0; }
+.drawer-card { box-shadow: 0 -10px 20px -5px rgba(0,0,0,0.2); flex-grow: 1; overflow-y: auto; }
+#interview-history-list li:hover { background-color: #f3f4f6; }
+.header-login-btn { border: 2px solid #3b82f6; color: #e0e0e0; padding: 0.5rem 1.5rem; border-radius: 9999px; font-weight: 500; transition: all 0.2s ease; }
+.header-login-btn:hover { background-color: #3b82f6; color: white; }
+.feature-item { color: #9ca3af; transition: color 0.2s ease; }
+.feature-item:hover { color: #3b82f6; }
+.feature-item svg { width: 4rem; height: 4rem; margin-bottom: 1rem; }
+.start-interview-home-btn { border: 2px solid #3b82f6; color: #e0e0e0; padding: 0.75rem 2rem; border-radius: 9999px; font-weight: 600; transition: all 0.2s ease; }
+.start-interview-home-btn:hover { background-color: #3b82f6; color: white; }
+.video-container video { width: 100%; height: 100%; object-fit: cover; transition: all 0.5s ease-in-out; }
+#userVideoContainer { position: absolute; bottom: 1rem; right: 1rem; width: 128px; height: 128px; border-radius: 9999px; overflow: hidden; border: 2px solid rgba(255,255,255,0.5); cursor: pointer; z-index: 10; transition: all 0.5s ease-in-out; }
+#userVideoContainer video { transform: scaleX(-1); border-radius: 9999px; }
+#aiVideoContainer { position: absolute; top: 0; left: 0; width: 100%; height: 100%; transition: all 0.5s ease-in-out; border-radius: 1rem; overflow: hidden; background-color: #1a1a2e; }
+#aiVideoContainer video { border-radius: 1rem; }
+.swapped #userVideoContainer { width: 100%; height: 100%; border-radius: 1rem; bottom: 0; right: 0; border: none; cursor: default; z-index: 0; }
+.swapped #userVideoContainer video { border-radius: 1rem; }
+.swapped #aiVideoContainer { width: 128px; height: 128px; border-radius: 9999px; bottom: 1rem; right: 1rem; top: auto; left: auto; border: 2px solid rgba(255,255,255,0.5); cursor: pointer; z-index: 10; }
+.swapped #aiVideoContainer video { border-radius: 9999px; }
+@keyframes fadeInUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+.animated-element { opacity: 0; }
+.animate-fade-in-up { animation: fadeInUp 0.8s ease-out forwards; }
+.animation-delay-200 { animation-delay: 200ms; }
+.animation-delay-400 { animation-delay: 400ms; }
+.animation-delay-600 { animation-delay: 600ms; }
+.scrollable-content::-webkit-scrollbar { display: none; }
+.scrollable-content { -ms-overflow-style: none; scrollbar-width: none; }
+/* Resume upload specific */
+#resumePreview { white-space: pre-wrap; color: #d1d5db; max-height: 180px; overflow-y: auto; }
+#resumeSummary { color: #e6e7ff; }
+</style>
+<script>
+    // === DOM ELEMENTS ===
+const drawer = document.getElementById('drawer');
+const drawerBackdrop = document.getElementById('drawer-backdrop');
+const drawerContent = document.getElementById('drawer-content');
+const headerAuthSection = document.getElementById('header-auth-section');
+
+const featuresModal = document.getElementById('featuresModal');
+const closeFeaturesModalBtn = document.getElementById('closeFeaturesModalBtn');
+
+const homeScreen = document.getElementById('homeScreen');
+const setupScreen = document.getElementById('setupScreen');
+const interviewScreen = document.getElementById('interviewScreen');
+const summaryScreen = document.getElementById('summaryScreen');
+
+const startInterviewHomeBtn = document.getElementById('startInterviewHomeBtn');
+const startInterviewBtn = document.getElementById('startInterviewBtn');
+const endInterviewBtn = document.getElementById('endInterviewBtn');
+const restartBtn = document.getElementById('restartBtn');
+const generateDescBtn = document.getElementById('generateDescBtn');
+const hintBtn = document.getElementById('hintBtn');
+
+const languageSelector = document.getElementById('languageSelector');
+const jobTitleInput = document.getElementById('jobTitle');
+const jobDescriptionInput = document.getElementById('jobDescription');
+const difficultyInput = document.getElementById('difficulty');
+const interviewTitle = document.getElementById('interviewTitle');
+const aiQuestion = document.getElementById('aiQuestion');
+const statusIndicator = document.getElementById('statusIndicator');
+const statusIconContainer = document.getElementById('statusIconContainer');
+const statusText = document.getElementById('statusText');
+const userTranscript = document.getElementById('userTranscript');
+const feedbackContainer = document.getElementById('feedbackContainer');
+const aiFeedback = document.getElementById('aiFeedback');
+const summaryContent = document.getElementById('summaryContent');
+const summaryPlaceholder = document.getElementById('summaryPlaceholder');
+
+const resumeInput = document.getElementById('resumeInput');
+const uploadResumeBtn = document.getElementById('uploadResumeBtn');
+const resumePreview = document.getElementById('resumePreview');
+const resumeSummaryEl = document.getElementById('resumeSummary');
+const useResumeCheckbox = document.getElementById('useResumeCheckbox');
+const regenerateSummaryBtn = document.getElementById('regenerateSummaryBtn');
+
+const mobileMenuButton = document.getElementById('mobile-menu-button');
+const mobileMenu = document.getElementById('mobile-menu');
+const mobileHomeLink = document.getElementById('mobileHomeLink');
+const mobileFeaturesLink = document.getElementById('mobileFeaturesLink');
+const homeLink = document.getElementById('homeLink');
+const featuresLink = document.getElementById('featuresLink');
+
+// === MEDIA ELEMENTS ===
+const micBtn = document.getElementById('micBtn');
+const videoBtn = document.getElementById('videoBtn');
+const videoElement = document.getElementById('videoElement');
+const videoPlaceholder = document.getElementById('videoPlaceholder');
+const aiVideoContainer = document.getElementById('aiVideoContainer');
+const userVideoContainer = document.getElementById('userVideoContainer');
+const videoFeedContainer = document.getElementById('videoFeedContainer');
+const aiAvatarVideo = document.getElementById('aiAvatarVideo');
+
+// === SPEECH + STATE ===
+const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+const recognition = SpeechRecognition ? new SpeechRecognition() : null;
+
+let englishVoice, hindiVoice;
+let conversationHistory = [];
+let interviewLog = [];
+let currentQuestion = "";
+let isListening = false;
+let isInterviewActive = false;
+let currentLang = 'en';
+let loginAndStart = false;
+let userStream = null;
+let isMicOn = true;
+let isVideoOn = true;
+let noResponseCounter = 0;
+let uploadedResumeText = '';
+let uploadedResumeName = '';
+
+const videoStates = {
+  speaking: 'https://storage.googleapis.com/gemini-prod.appspot.com/669f744572522_Professional_Interviewer_Video_Generated.mp4',
+  listening: 'https://videos.pexels.com/video-files/856722/856722-hd_1280_720_25fps.mp4',
+  thinking: 'https://videos.pexels.com/video-files/7578809/7578809-hd_1920_1080_25fps.mp4'
+};
+
+// === TRANSLATIONS ===
+const translations = {
+  en: {
+    main_title: "AI Interview Coach",
+    tagline: "Practice for your dream job.",
+    select_language: "Interview Language",
+    job_title_label: "Job Title",
+    job_desc_label: "Job Description",
+    generate_desc_btn: "Generate Description",
+    job_desc_placeholder: "Paste job description here...",
+    start_btn: "Start Practice",
+    status_waiting: "Waiting to start...",
+    status_listening: "Listening...",
+    status_processing: "Processing...",
+    status_thinking: "AI Coach is thinking...",
+    status_mic_error: "Mic error. Check permissions.",
+    alert_no_jd: "Please enter a job description or upload resume."
+  },
+  hi: {
+    main_title: "AI Interview Coach",
+    tagline: "Apne dream job ke liye practice karein.",
+    select_language: "Interview Language",
+    job_title_label: "Job Title",
+    job_desc_label: "Job Description",
+    generate_desc_btn: "Description Generate Karein",
+    job_desc_placeholder: "Job description yahan paste karein...",
+    start_btn: "Practice Shuru Karein",
+    status_waiting: "Start hone ka wait hai...",
+    status_listening: "Suna ja raha hai...",
+    status_processing: "Process ho raha hai...",
+    status_thinking: "AI Coach soch raha hai...",
+    status_mic_error: "Mic error. Permissions check karein.",
+    alert_no_jd: "Job description ya resume upload karein."
+  }
+};
+
+</script>
+</html>
