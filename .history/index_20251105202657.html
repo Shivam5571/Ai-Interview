@@ -805,7 +805,7 @@ async function extractTextFromResume(file) {
   const formData = new FormData();
   formData.append("file", file);
 
-  const response = await fetch("/.netlify/functions/extractResume.js", {
+  const response = await fetch("./netlify/functions/extractResume", {
     method: "POST",
     body: formData,
   });
