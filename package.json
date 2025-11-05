@@ -1,6 +1,7 @@
 {
   "dependencies": {
-    "pdf-parse-fixed": "^1.1.1",
-    "mammoth": "^1.6.0"
+    "@netlify/functions": "^5.0.1",
+    "mammoth": "^1.11.0",
+    "pdf-parse-fixed": "^1.1.1"
   }
 }
