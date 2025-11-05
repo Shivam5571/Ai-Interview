@@ -800,12 +800,12 @@
                  });
              }
         }
- // --- Resume Upload & Text Extraction ---
+        // --- Resume Upload & Text Extraction ---
 async function extractTextFromResume(file) {
   const formData = new FormData();
   formData.append("file", file);
 
-  const response = await fetch("/.netlify/functions/extractResume", {
+  const response = await fetch("/.netlify/functions/extractResume.js", {
     method: "POST",
     body: formData,
   });
@@ -828,7 +828,6 @@ resumeUpload.addEventListener("change", async (e) => {
     resumeStatus.textContent = "❌ Error reading resume. Try a text or PDF file.";
   }
 });
-
 
 
 async function startInterview() {
