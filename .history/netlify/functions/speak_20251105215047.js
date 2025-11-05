@@ -14,7 +14,7 @@ export async function handler(event) {
     }
 
     // 👉 Replace this ID with your own custom voice ID
-    const voiceId = "1qEiC6qsybMkmnNdVMbK"; // <-- your custom ID here
+    const voiceId = "pMsXgVXv3BLzUgSXRplE"; // <-- your custom ID here
 
     const response = await fetch(
       `https://api.elevenlabs.io/v1/text-to-speech/${voiceId}`,
