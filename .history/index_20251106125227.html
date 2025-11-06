@@ -225,7 +225,6 @@
 /* Table overlay positioning */
 .table-overlay {
   position: absolute;
-  top: 20px;
   bottom: 0;
   left: 50%;
   transform: translateX(-50%) translateY(10px);
@@ -433,6 +432,7 @@ model-viewer {
 <div id="aiVideoContainer" class="w-full h-full object-cover rounded-xl bg-[#0b0c1a] flex items-center justify-center">
 <model-viewer 
     src="./assets/model/coach_alak2.glb"
+    camera-controls
     shadow-intensity="1"
     exposure="1.1"
     camera-orbit="0deg 85deg 3.2m"
