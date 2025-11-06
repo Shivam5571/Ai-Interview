@@ -13,7 +13,7 @@ export async function handler(event) {
     }
 
     const apiUrl =
-      "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=" +
+      "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=" +
       apiKey;
 
     const response = await fetch(apiUrl, {
