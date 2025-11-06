@@ -676,6 +676,7 @@ function setupSpeechRecognition() {
 
   recognition.onend = () => {
     console.log("⏹️ Mic ended.");
+    if (isInterviewActive) restartMicWithDelay();
   };
 }
 
