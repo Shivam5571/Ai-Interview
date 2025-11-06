@@ -617,7 +617,6 @@ model-viewer {
         const resumeStatus = document.getElementById('resumeStatus');
         let resumeText = "";
         let currentAIAudio = null;
-
         
 
 
@@ -634,12 +633,9 @@ model-viewer {
 
         // --- Speech Recognition & Synthesis ---
 // === SPEECH RECOGNITION SYSTEM (FINAL FIXED) ===
-// === GLOBAL FLAGS ===
 let recognition;
 let isListening = false;
-let isSpeaking = false;
 
-// === SPEECH RECOGNITION SYSTEM ===
 function setupSpeechRecognition() {
   const SpeechRecognition =
     window.SpeechRecognition || window.webkitSpeechRecognition;
@@ -649,51 +645,37 @@ function setupSpeechRecognition() {
     return;
   }
 
-  // 🧹 Cleanup old mic instance before creating new one
-  if (recognition) {
-    try {
-      recognition.abort();
-      console.log("🧹 Old recognition aborted before creating new one.");
-    } catch (err) {
-      console.warn("Cleanup failed:", err);
-    }
-  }
-
   recognition = new SpeechRecognition();
   recognition.continuous = false;
   recognition.interimResults = false;
   recognition.lang = currentLang === "hi" ? "hi-IN" : "en-US";
 
-  // 🎤 When mic starts
   recognition.onstart = () => {
     isListening = true;
-    console.log("🎙️ Mic listening started...");
+    console.log("🎤 Mic listening started...");
+    updateStatus("status_listening", "listening");
     setAIAvatarState("listening");
   };
 
-  // 🎧 When user finishes speaking
   recognition.onresult = async (event) => {
-    try {
-      const transcript = event.results[0][0].transcript.trim();
-      console.log("🗣️ User said:", transcript);
-      if (transcript.length > 0) {
-        userTranscript.textContent = transcript;
-        stopListening();
-        await handleInterviewTurn(transcript);
-      }
-    } catch (err) {
-      console.error("⚠️ onresult error:", err);
+    const transcript = event.results[0][0].transcript.trim();
+    console.log("🗣️ User said:", transcript);
+    if (transcript.length > 0) {
+      userTranscript.textContent = transcript;
+      stopListening();
+      await handleInterviewTurn(transcript);
     }
   };
 
-  // ⚠️ Mic errors
   recognition.onerror = (event) => {
     console.error("⚠️ Recognition Error:", event.error);
+    if (["no-speech", "aborted", "network"].includes(event.error)) {
+      restartMicWithDelay();
+    }
   };
 
-  // 🧩 Mic ends
   recognition.onend = () => {
-    console.log("⏹️ Mic ended (handled by speak delay).");
+    console.log("⏹️ Mic ended.");
   };
 }
 
@@ -718,98 +700,19 @@ function stopListening() {
   }
 }
 
-// === SPEAK FUNCTION (Stable + Mic Control + Safety Flags) ===
-async function speak(text, onEndCallback, isReminder = false) {
-  try {
-    if (!text || text.trim().length === 0) return;
-
-    const lang = currentLang === "english" ? "english" : "hinglish";
-
-    // 💬 Show AI question text
-    if (!isReminder && text) {
-      aiQuestion.innerHTML = text.replace(/\n/g, "<br>");
-    }
-
-    // 🎙️ Stop mic before AI speaks
+function restartMicWithDelay() {
+  setTimeout(() => {
     try {
-      if (recognition && isListening) {
-        recognition.stop();
-        isListening = false;
-        console.log("🎙️ Mic paused during AI speech");
+      if (isInterviewActive && recognition && !isListening) {
+        recognition.start();
+        isListening = true;
+        console.log("🎤 Mic auto-restarted after short delay");
       }
     } catch (err) {
-      console.warn("Mic pause error:", err);
+      console.warn("Mic restart failed:", err);
     }
-
-    // 🧠 Fetch voice from backend (Netlify function)
-    const response = await fetch("/.netlify/functions/speak", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ text, lang }),
-    });
-
-    if (!response.ok) throw new Error("Voice fetch failed");
-
-    const audioBlob = await response.blob();
-    const audioUrl = URL.createObjectURL(audioBlob);
-    const audio = new Audio(audioUrl);
-
-    // 🌟 Avatar animation state
-    setAIAvatarState("speaking");
-    isSpeaking = true; // ✅ Mark AI as speaking
-
-    // 🔊 Play AI speech
-    await audio.play();
-
-    // 🧩 When speech ends
-    audio.onended = () => {
-      console.log("✅ AI speech finished.");
-      setAIAvatarState("listening");
-      isSpeaking = false; // ✅ Mark AI as done speaking
-
-      // 🧹 Clear mic if old instance active
-      try {
-        if (recognition && isListening) {
-          recognition.stop();
-          isListening = false;
-          console.log("🛑 Old mic session cleared");
-        }
-      } catch (err) {
-        console.warn("Mic cleanup error:", err);
-      }
-
-      // 🎤 Restart mic safely after delay
-      setTimeout(() => {
-        try {
-          if (!isSpeaking && isInterviewActive && recognition && !isListening) {
-            recognition.start();
-            isListening = true;
-            console.log("🎤 Mic restarted (after 1s delay)");
-          } else {
-            console.log("⏳ Mic restart skipped (AI still speaking or interview ended)");
-          }
-        } catch (err) {
-          console.warn("Mic restart error:", err);
-        }
-      }, 1000);
-
-      if (onEndCallback) onEndCallback();
-    };
-
-    // ⚠️ Voice playback error
-    audio.onerror = (e) => {
-      console.error("Audio playback error:", e);
-      setAIAvatarState("listening");
-      isSpeaking = false;
-      if (onEndCallback) onEndCallback();
-    };
-  } catch (err) {
-    console.error("Voice playback error:", err);
-    isSpeaking = false;
-    setAIAvatarState("thinking");
-  }
+  }, 1000);
 }
-
 
         let endOfSpeechTimeout;
         let noResponseTimeout;
@@ -920,6 +823,94 @@ async function speak(text, onEndCallback, isReminder = false) {
                          voices.find(v => v.lang === 'hi-IN');
         }
 
+// --- SPEAK FUNCTION (Replace existing one) ---
+// 🎤 Speak Function (AI voice + mic auto control + stable restart)
+async function speak(text, onEndCallback, isReminder = false) {
+  try {
+    if (!text || text.trim().length === 0) return;
+
+    const lang = currentLang === "english" ? "english" : "hinglish";
+
+    // 💬 Display AI text on screen
+    if (!isReminder && text) {
+      aiQuestion.innerHTML = text.replace(/\n/g, "<br>");
+    }
+
+    // 🧏 Pause mic while AI is speaking (to avoid feedback)
+    try {
+      if (recognition && isListening) {
+        recognition.stop();
+        isListening = false;
+        console.log("🎙️ Mic paused during AI speech");
+      }
+    } catch (err) {
+      console.warn("Mic pause error:", err);
+    }
+
+    // 🎯 Call backend to generate AI voice
+    const response = await fetch("/.netlify/functions/speak", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ text, lang }),
+    });
+
+    if (!response.ok) throw new Error("Voice fetch failed");
+
+    // 🧠 Convert to playable audio
+    const audioBlob = await response.blob();
+    const audioUrl = URL.createObjectURL(audioBlob);
+    const audio = new Audio(audioUrl);
+
+    // 🌟 Avatar visual: speaking
+    setAIAvatarState("speaking");
+
+    // 🔈 Play AI voice
+    await audio.play();
+
+    // 🌙 On speech end — delay & restart mic safely
+    audio.onended = () => {
+      setAIAvatarState("listening");
+      console.log("✅ AI speech finished");
+
+      // Stop any pending mic instances before restart
+      try {
+        if (recognition && isListening) {
+          recognition.stop();
+          isListening = false;
+          console.log("🛑 Old mic session cleared");
+        }
+      } catch (err) {
+        console.warn("Mic cleanup error:", err);
+      }
+
+      // Delay restart mic (fixes Chrome block bug)
+      setTimeout(() => {
+        try {
+          if (isInterviewActive && recognition && !isListening) {
+            recognition.start();
+            isListening = true;
+            console.log("🎤 Mic restarted (after 1s delay)");
+          }
+        } catch (err) {
+          console.warn("Mic restart error:", err);
+        }
+      }, 1000);
+
+      // Run callback (for next question flow)
+      if (onEndCallback) onEndCallback();
+    };
+
+    // 🎧 Handle playback errors gracefully
+    audio.onerror = (e) => {
+      console.error("Audio playback error:", e);
+      setAIAvatarState("listening");
+      if (onEndCallback) onEndCallback();
+    };
+  } catch (err) {
+    console.error("Voice playback error:", err);
+    setAIAvatarState("thinking");
+  }
+}
 
 
         function startListening() {
