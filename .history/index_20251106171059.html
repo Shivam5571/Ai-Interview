@@ -930,7 +930,7 @@ async function speak(text, onEndCallback, isReminder = false) {
 
         function startNoResponseTimer() {
             clearTimeout(noResponseTimeout);
-            noResponseTimeout = setTimeout(handleNoResponse, 15000); // 10 seconds
+            noResponseTimeout = setTimeout(handleNoResponse, 10000); // 10 seconds
         }
 
         // === AI INTERVIEW MAIN LOGIC ===
@@ -1720,6 +1720,8 @@ function setAIAvatarState(state) {
             featuresModal.classList.add('flex');
             mobileMenu.classList.add('hidden');
         });
+
+
         // --- App Initialization ---
         window.addEventListener('load', () => {
             setLanguage(languageSelector.value);

@@ -883,6 +883,7 @@ async function speak(text, onEndCallback, isReminder = false) {
                          voices.find(v => v.lang === 'hi-IN');
         }
 
+
        async function callGeminiAPI(history, purpose = "interview") {
             setAIAvatarState('thinking');
             let statusKey = 'status_thinking';
@@ -930,7 +931,7 @@ async function speak(text, onEndCallback, isReminder = false) {
 
         function startNoResponseTimer() {
             clearTimeout(noResponseTimeout);
-            noResponseTimeout = setTimeout(handleNoResponse, 15000); // 10 seconds
+            noResponseTimeout = setTimeout(handleNoResponse, 10000); // 10 seconds
         }
 
         // === AI INTERVIEW MAIN LOGIC ===
@@ -1720,6 +1721,80 @@ function setAIAvatarState(state) {
             featuresModal.classList.add('flex');
             mobileMenu.classList.add('hidden');
         });
+
+        if (recognition) {
+            recognition.onresult = (e) => {
+  clearTimeout(noResponseTimeout);
+  noResponseCounter = 0;
+
+  let finalTranscript = '';
+  for (let i = e.resultIndex; i < e.results.length; ++i) {
+    if (e.results[i].isFinal) finalTranscript += e.results[i][0].transcript;
+  }
+
+  if (finalTranscript) {
+    userTranscript.textContent = finalTranscript;
+  }
+
+  // 🧠 Intelligent silence detection (no overlap)
+  clearTimeout(endOfSpeechTimeout);
+  endOfSpeechTimeout = setTimeout(() => {
+    if (!isInterviewActive || !isListening) return;
+
+    const currentTranscript = userTranscript.textContent.trim();
+
+    // 🚫 Don't interrupt if user is still speaking short/incomplete sentences
+    if (currentTranscript.split(" ").length < 3) {
+      startListening(); // keep mic open
+      return;
+    }
+
+    stopListening();
+
+    if (
+      currentTranscript &&
+      currentTranscript !== "..." &&
+      currentTranscript !== translations[currentLang].transcript_placeholder
+    ) {
+      handleInterviewTurn(currentTranscript);
+    } else {
+      // 🔕 Give reminder only if long silence
+      clearTimeout(noResponseTimeout);
+      noResponseTimeout = setTimeout(() => {
+        if (isInterviewActive) {
+          speak(translations[currentLang].reminder_no_response, () => {
+            startListening();
+          }, true);
+        }
+      }, 10000);
+    }
+  }, 5000); // ⏱️ Increased buffer to 5 seconds for smoother response
+};
+
+
+            recognition.onerror = (e) => {
+                console.error("Speech recognition error:", e.error);
+                isListening = false;
+                let errorKey = 'An unknown error occurred.';
+                if (e.error === 'network') errorKey = 'status_network_error';
+                else if (e.error === 'no-speech' && isInterviewActive) {
+                    // This is handled by the noResponseTimeout now, so we can ignore this specific error
+                    return; 
+                } 
+                else if (e.error === 'audio-capture' || e.error === 'not-allowed') errorKey = 'status_mic_error';
+                updateStatus(errorKey, 'error');
+            };
+            
+            recognition.onend = () => {
+                if (isInterviewActive && isListening) {
+                    isListening = false;
+                    startListening();
+                } else {
+                    isListening = false;
+                }
+            };
+        }
+
         // --- App Initialization ---
         window.addEventListener('load', () => {
             setLanguage(languageSelector.value);
