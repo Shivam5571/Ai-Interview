@@ -723,6 +723,7 @@ function restartMicWithDelay() {
         let conversationHistory = [];
         let interviewLog = [];
         let currentQuestion = "";
+        let isListening = false;
         let isInterviewActive = false;
         let currentLang = 'en';
         let loginAndStart = false; 
@@ -1143,7 +1144,7 @@ resumeUpload.addEventListener("change", async (e) => {
 
 
 async function startInterview() {
-    setupSpeechRecognition();
+    
     const jobTitle = jobTitleInput.value.trim();
     const jobDescription = jobDescriptionInput.value.trim();
     const difficulty = difficultyInput.value;

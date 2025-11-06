@@ -632,89 +632,8 @@ model-viewer {
         const aiAvatarVideo = document.getElementById('aiAvatarVideo');
 
         // --- Speech Recognition & Synthesis ---
-// === SPEECH RECOGNITION SYSTEM (FINAL FIXED) ===
-let recognition;
-let isListening = false;
-
-function setupSpeechRecognition() {
-  const SpeechRecognition =
-    window.SpeechRecognition || window.webkitSpeechRecognition;
-
-  if (!SpeechRecognition) {
-    alert("Speech Recognition not supported in this browser. Use Chrome for best results.");
-    return;
-  }
-
-  recognition = new SpeechRecognition();
-  recognition.continuous = false;
-  recognition.interimResults = false;
-  recognition.lang = currentLang === "hi" ? "hi-IN" : "en-US";
-
-  recognition.onstart = () => {
-    isListening = true;
-    console.log("🎤 Mic listening started...");
-    updateStatus("status_listening", "listening");
-    setAIAvatarState("listening");
-  };
-
-  recognition.onresult = async (event) => {
-    const transcript = event.results[0][0].transcript.trim();
-    console.log("🗣️ User said:", transcript);
-    if (transcript.length > 0) {
-      userTranscript.textContent = transcript;
-      stopListening();
-      await handleInterviewTurn(transcript);
-    }
-  };
-
-  recognition.onerror = (event) => {
-    console.error("⚠️ Recognition Error:", event.error);
-    if (["no-speech", "aborted", "network"].includes(event.error)) {
-      restartMicWithDelay();
-    }
-  };
-
-  recognition.onend = () => {
-    console.log("⏹️ Mic ended.");
-    if (isInterviewActive) restartMicWithDelay();
-  };
-}
-
-function startListening() {
-  try {
-    if (!recognition) setupSpeechRecognition();
-    recognition.start();
-  } catch (err) {
-    console.warn("🎙️ startListening error:", err);
-  }
-}
-
-function stopListening() {
-  try {
-    if (recognition && isListening) {
-      recognition.stop();
-      isListening = false;
-      console.log("🛑 Mic stopped manually");
-    }
-  } catch (err) {
-    console.warn("stopListening error:", err);
-  }
-}
-
-function restartMicWithDelay() {
-  setTimeout(() => {
-    try {
-      if (isInterviewActive && recognition && !isListening) {
-        recognition.start();
-        isListening = true;
-        console.log("🎤 Mic auto-restarted after short delay");
-      }
-    } catch (err) {
-      console.warn("Mic restart failed:", err);
-    }
-  }, 1000);
-}
-
+        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+        const recognition = SpeechRecognition ? new SpeechRecognition() : null;
         let endOfSpeechTimeout;
         let noResponseTimeout;
         let englishVoice, hindiVoice;
@@ -723,6 +642,7 @@ function restartMicWithDelay() {
         let conversationHistory = [];
         let interviewLog = [];
         let currentQuestion = "";
+        let isListening = false;
         let isInterviewActive = false;
         let currentLang = 'en';
         let loginAndStart = false; 
@@ -1853,6 +1773,92 @@ function setAIAvatarState(state) {
             updateStatus('status_waiting', 'waiting');
             showScreen('homeScreen');
         });
+
+        // === SPEECH RECOGNITION SYSTEM ===
+let recognition;
+let isListening = false;
+
+function setupSpeechRecognition() {
+  const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+
+  if (!SpeechRecognition) {
+    alert("Speech Recognition not supported in this browser. Use Chrome for best results.");
+    return;
+  }
+
+  recognition = new SpeechRecognition();
+  recognition.continuous = false;        // Stop after one full sentence
+  recognition.interimResults = false;    // No half results
+  recognition.lang = currentLang === "hi" ? "hi-IN" : "en-US";
+
+  recognition.onstart = () => {
+    isListening = true;
+    console.log("🎤 Mic listening started...");
+    updateStatus("status_listening", "listening");
+    setAIAvatarState("listening");
+  };
+
+  recognition.onresult = async (event) => {
+    const transcript = event.results[0][0].transcript.trim();
+    console.log("🗣️ User said:", transcript);
+
+    if (transcript.length > 1) {
+      userTranscript.textContent = transcript;
+      stopListening();
+      await handleInterviewTurn(transcript);
+    }
+  };
+
+  recognition.onerror = (event) => {
+    console.error("⚠️ Speech Recognition Error:", event.error);
+    if (event.error === "no-speech" || event.error === "aborted") {
+      restartMicWithDelay();
+    }
+  };
+
+  recognition.onend = () => {
+    console.log("⏹️ Mic ended.");
+    if (isInterviewActive) {
+      restartMicWithDelay();
+    }
+  };
+}
+
+function startListening() {
+  try {
+    if (!recognition) setupSpeechRecognition();
+    recognition.start();
+  } catch (err) {
+    console.warn("🎙️ StartListening error:", err);
+  }
+}
+
+function stopListening() {
+  try {
+    if (recognition && isListening) {
+      recognition.stop();
+      isListening = false;
+      console.log("🛑 Mic stopped manually");
+    }
+  } catch (err) {
+    console.warn("Stop mic error:", err);
+  }
+}
+
+function restartMicWithDelay() {
+  setTimeout(() => {
+    try {
+      if (isInterviewActive && !isListening) {
+        recognition.start();
+        isListening = true;
+        console.log("🎤 Mic auto-restarted after pause");
+      }
+    } catch (e) {
+      console.warn("Mic restart failed:", e);
+    }
+  }, 1000);
+}
+
 
     </script>
 </body>
