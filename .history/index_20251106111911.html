@@ -208,14 +208,13 @@
             scrollbar-width: none;  /* Firefox */
         }
         #aiModel {
-  animation: blinkIdle 6s infinite;
+  animation: idleBlink 6s infinite;
   transition: filter 0.4s ease;
 }
-@keyframes blinkIdle {
+@keyframes idleBlink {
   0%, 90%, 100% { filter: brightness(1); }
   95% { filter: brightness(0.7); }
 }
-
 
     </style>
 </head>
@@ -396,7 +395,7 @@
 <div id="aiVideoContainer" class="w-full h-full object-cover rounded-xl bg-[#0b0c1a] flex items-center justify-center">
   <model-viewer
     id="aiModel"
-    src="/assets/model/coach.glb"
+    src="model/alak_sharma.glb"
     camera-controls
     auto-rotate
     disable-zoom
@@ -1085,27 +1084,14 @@ Begin with your greeting, ask the candidate’s name, and continue naturally as 
         }
 
         // --- Media Functions ---
-function setAIAvatarState(state) {
-  const aiModel = document.getElementById("aiModel");
-  if (!aiModel) return;
-
-  switch (state) {
-    case "speaking":
-      aiModel.style.filter = "brightness(1.25)";
-      aiModel.setAttribute("auto-rotate", false);
-      break;
-    case "thinking":
-      aiModel.style.filter = "grayscale(0.5)";
-      aiModel.setAttribute("auto-rotate", true);
-      break;
-    case "listening":
-    default:
-      aiModel.style.filter = "brightness(1)";
-      aiModel.setAttribute("auto-rotate", true);
-      break;
-  }
-}
-
+        function setAIAvatarState(state) {
+            if (aiAvatarVideo.src !== videoStates[state]) {
+                aiAvatarVideo.src = videoStates[state];
+            }
+            if (state === 'listening' || state === 'thinking' || state === 'speaking') {
+                aiAvatarVideo.play().catch(e => console.error("Video play error:", e));
+            }
+        }
 
         async function setupCamera() {
             setAIAvatarState('listening');

@@ -6,6 +6,7 @@
     <title>AI Interview Coach</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script type="module" src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js"></script>
+
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -207,16 +208,6 @@
             -ms-overflow-style: none;  /* IE and Edge */
             scrollbar-width: none;  /* Firefox */
         }
-        #aiModel {
-  animation: blinkIdle 6s infinite;
-  transition: filter 0.4s ease;
-}
-@keyframes blinkIdle {
-  0%, 90%, 100% { filter: brightness(1); }
-  95% { filter: brightness(0.7); }
-}
-
-
     </style>
 </head>
 <body class="flex flex-col h-screen">
@@ -392,21 +383,9 @@
                         <div class="glass-card p-4 sm:p-6 flex-grow flex flex-col h-full">
                            <div id="videoFeedContainer" class="video-container flex-grow bg-black/20 rounded-xl flex items-center justify-center relative min-h-[300px] md:min-h-[400px] overflow-hidden">
                                 <!-- AI Agent Video -->
-                                <!-- AI HR Model (Alak Sharma) -->
-<div id="aiVideoContainer" class="w-full h-full object-cover rounded-xl bg-[#0b0c1a] flex items-center justify-center">
-  <model-viewer
-    id="aiModel"
-    src="/assets/model/coach.glb"
-    camera-controls
-    auto-rotate
-    disable-zoom
-    autoplay
-    environment-image="neutral"
-    style="width: 100%; height: 100%; border-radius: 1rem;">
-  </model-viewer>
-</div>
-
-
+                                <div id="aiVideoContainer">
+                                    <video id="aiAvatarVideo" class="w-full h-full object-cover" loop playsinline></video>
+                                </div>
                                 <!-- User Video -->
                                 <div id="userVideoContainer">
                                     <video id="videoElement" class="hidden w-full h-full object-cover" autoplay muted playsinline></video>
@@ -1085,27 +1064,14 @@ Begin with your greeting, ask the candidate’s name, and continue naturally as 
         }
 
         // --- Media Functions ---
-function setAIAvatarState(state) {
-  const aiModel = document.getElementById("aiModel");
-  if (!aiModel) return;
-
-  switch (state) {
-    case "speaking":
-      aiModel.style.filter = "brightness(1.25)";
-      aiModel.setAttribute("auto-rotate", false);
-      break;
-    case "thinking":
-      aiModel.style.filter = "grayscale(0.5)";
-      aiModel.setAttribute("auto-rotate", true);
-      break;
-    case "listening":
-    default:
-      aiModel.style.filter = "brightness(1)";
-      aiModel.setAttribute("auto-rotate", true);
-      break;
-  }
-}
-
+        function setAIAvatarState(state) {
+            if (aiAvatarVideo.src !== videoStates[state]) {
+                aiAvatarVideo.src = videoStates[state];
+            }
+            if (state === 'listening' || state === 'thinking' || state === 'speaking') {
+                aiAvatarVideo.play().catch(e => console.error("Video play error:", e));
+            }
+        }
 
         async function setupCamera() {
             setAIAvatarState('listening');
