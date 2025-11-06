@@ -264,15 +264,10 @@ model-viewer {
   transition: all 0.6s ease-in-out;
   transform: translateY(120px);
 }
-@media (max-width: 768px) {
-  .table-overlay {
-    bottom: -40px;
-    max-width: 700px;
-  }
-  .swapped #aiVideoContainer .table-overlay {
-    bottom: -10px;
-    opacity: 0.9;
-  }
+
+/* 🔧 When swapped (AI small bubble) → zoom out + thoda adjust */
+.swapped #aiVideoContainer model-viewer {
+  transform: translateY(60px) scale(1.1);
 }
 
     </style>
