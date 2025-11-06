@@ -1060,92 +1060,58 @@ Begin with your greeting, ask the candidate’s name, and continue naturally as 
 
         
         async function endInterview() {
-// --- END INTERVIEW FUNCTION (Replace existing one) ---
-async function endInterview() {
-  if (!isInterviewActive) return; // Prevent duplicate clicks
-  console.log("🛑 Ending interview...");
+            isInterviewActive = false;
+            stopListening();
+            window.speechSynthesis.cancel();
+            clearTimeout(noResponseTimeout);
+            clearTimeout(endOfSpeechTimeout);
+            
+            if (userStream) {
+                userStream.getTracks().forEach(track => track.stop());
+                userStream = null;
+            }
+            videoElement.classList.add('hidden');
+            videoPlaceholder.classList.remove('hidden');
+            aiAvatarVideo.pause();
 
-  isInterviewActive = false;
-  isListening = false;
+            const jobTitle = jobTitleInput.value.trim() || 'Practice Interview';
+            let status = 'Needs Improvement';
 
-  // Disable buttons immediately
-  [endInterviewBtn, micBtn, videoBtn, hintBtn].forEach((btn) => {
-    if (btn) btn.disabled = true;
-  });
+            const summaryPrompt = `Based on the following interview log, please generate a comprehensive summary report for the user in simple ${currentLang === 'hi' ? 'Hinglish' : 'English'}.
+            **IMPORTANT RULE: Do not use any symbols or emojis in your report.**
+            The report MUST start with a single, overall interview status. Choose one from: "Strong Hire", "Good Potential", "Needs Improvement". Wrap this status in a div with an id, like this: <div id="interview-status">Strong Hire</div>.
 
-  // 🧹 Stop audio playback
-  if (window.currentAudio) {
-    try {
-      window.currentAudio.pause();
-      window.currentAudio = null;
-    } catch (e) {
-      console.warn("Audio stop error:", e);
-    }
-  }
+            After the status, the report should have two main sections.
+            Format the rest of the output using simple HTML tags. Use <h2> for main titles, <h3> for subtitles, <p> for text, <strong> for highlighting, and <ul>/<li> for lists. For the ideal answer points, use the provided HTML list items. Create a container div with class 'summary-block' for each question-answer pair. Do not include <html> or <body> tags.
+            1. <h2>Overall Performance</h2>: A friendly, overall summary. Highlight strengths and point out key areas for improvement constructively.
+            2. <h2>Question Breakdown</h2>: For each item in the log, present the Question, the User's Answer, the Feedback, and the Ideal Answer Points in a clear, easy-to-read format inside a 'summary-block' div.
+            Interview Log: ${JSON.stringify(interviewLog, null, 2)}`;
+            
+            showScreen('summaryScreen');
+            summaryPlaceholder.style.display = 'flex';
+            summaryContent.innerHTML = '';
+            summaryContent.appendChild(summaryPlaceholder);
 
-  // 🧹 Stop speech recognition
-  try {
-    if (recognition) {
-      recognition.onend = null;
-      recognition.stop();
-    }
-  } catch (e) {
-    console.warn("Recognition stop error:", e);
-  }
+            const summaryHTML = await callGeminiAPI([{ role: "user", parts: [{ text: summaryPrompt }] }], "summary");
+            if (summaryHTML) {
+                summaryPlaceholder.style.display = 'none';
 
-  // 🧹 Cancel speech synthesis (if any)
-  try {
-    window.speechSynthesis.cancel();
-  } catch (e) {}
+                const tempDiv = document.createElement('div');
+                tempDiv.innerHTML = summaryHTML;
 
-  // 🧹 Clear timers
-  try {
-    clearTimeout(noResponseTimeout);
-    clearTimeout(endOfSpeechTimeout);
-  } catch (e) {}
+                const statusElement = tempDiv.querySelector('#interview-status');
+                if (statusElement) {
+                    status = statusElement.textContent.trim();
+                    displayInterviewStatus(status);
+                    statusElement.remove();
+                }
 
-  // 🧹 Stop webcam/mic stream
-  try {
-    if (userStream) {
-      userStream.getTracks().forEach((track) => track.stop());
-      userStream = null;
-    }
-  } catch (e) {
-    console.warn("Stream stop error:", e);
-  }
-
-  // 🧹 Reset avatar
-  setAIAvatarState("listening");
-
-  // 👀 Switch to summary screen
-  try {
-    showScreen("summaryScreen");
-    summaryPlaceholder.style.display = "flex";
-    summaryContent.innerHTML = "";
-  } catch (e) {
-    console.warn("Screen switch error:", e);
-  }
-
-  // 🧾 Generate summary
-  try {
-    const jobTitle = jobTitleInput.value.trim() || "Interview";
-    const summaryPrompt = `Create an interview summary for the candidate in simple ${currentLang === "hi" ? "Hinglish" : "English"}. Use short paragraphs and a professional tone. Include performance feedback and suggestions. Interview log: ${JSON.stringify(interviewLog, null, 2)}`;
-    
-    const result = await callGeminiAPI([{ role: "user", parts: [{ text: summaryPrompt }] }], "summary");
-
-    if (result) {
-      summaryPlaceholder.style.display = "none";
-      summaryContent.innerHTML = result;
-    } else {
-      summaryContent.innerHTML = "<p>❌ Summary generation failed.</p>";
-    }
-  } catch (error) {
-    console.error("Summary Error:", error);
-    summaryContent.innerHTML = "<p>⚠️ Error generating summary.</p>";
-  } finally {
-    endInterviewBtn.disabled = false;
-  }
-}
+                const finalSummaryHTML = tempDiv.innerHTML;
+                summaryContent.innerHTML = finalSummaryHTML;
+                saveInterviewToHistory({ title: jobTitle, date: new Date().toISOString(), status, summary: finalSummaryHTML });
+            } else {
+                summaryContent.innerHTML = `<p class="text-red-400">${translations[currentLang].summary_generating_error || 'Sorry, an error occurred while generating the summary.'}</p>`;
+            }
         }
         
         async function handleGenerateDescription() {
