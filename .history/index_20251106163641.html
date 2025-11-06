@@ -1258,122 +1258,6 @@ Begin with your greeting, ask the candidate’s name, and continue naturally as 
 }
 
         
-// === ULTIMATE END INTERVIEW FUNCTION (Full Summary + Q&A + Status) ===
-async function endInterview() {
-  try {
-    console.log("🛑 Ending interview initiated...");
-    isInterviewActive = false;
-    isListening = false;
-
-    // Stop everything
-    if (currentAIAudio) currentAIAudio.pause();
-    window.speechSynthesis.cancel();
-    if (recognition) recognition.stop();
-    if (userStream) {
-      userStream.getTracks().forEach((track) => track.stop());
-      userStream = null;
-    }
-    clearTimeout(noResponseTimeout);
-    clearTimeout(endOfSpeechTimeout);
-
-    showScreen("summaryScreen");
-    summaryPlaceholder.style.display = "flex";
-    summaryContent.innerHTML = "";
-
-    // 🎙️ Closing line
-    await speak("Thank you for participating. Please wait while I prepare your detailed performance report.");
-
-    // --- Build AI Prompt ---
-    const summaryPrompt = `
-You are an HR evaluator AI. Based on this interview log, create a complete structured HTML summary report.
-
-Use this exact format:
-
-<h2>Candidate Overview</h2>
-- Short summary about communication, confidence, and knowledge.
-
-<h2>Strengths</h2>
-<ul><li>Point 1</li><li>Point 2</li><li>Point 3</li></ul>
-
-<h2>Areas of Improvement</h2>
-<ul><li>Point 1</li><li>Point 2</li><li>Point 3</li></ul>
-
-<h2>AI Coach Feedback</h2>
-- Short HR-style feedback about tone, attitude, and engagement.
-
-<h2>Suggested Next Steps</h2>
-<ul><li>Advice 1</li><li>Advice 2</li></ul>
-
-<h2>Detailed Q&A Analysis</h2>
-For each question in the interview log, include:
-- <strong>Question:</strong> [The AI’s question]
-- <strong>Your Answer:</strong> [User’s answer]
-- <strong>Feedback:</strong> [AI’s feedback]
-- <strong>Ideal Answer:</strong> [AI’s suggested ideal answer points]
-
-<h2>Overall Status</h2>
-End with one of these three results:
-<strong>Strong Hire</strong> / <strong>Good Potential</strong> / <strong>Needs Improvement</strong>
-
-Interview Log JSON:
-${JSON.stringify(interviewLog, null, 2)}
-
-Keep everything clean, structured, and visually consistent.
-Do not add emojis or unnecessary text.
-`;
-
-    // --- Call Gemini API ---
-    const result = await callGeminiAPI(
-      [{ role: "user", parts: [{ text: summaryPrompt }] }],
-      "summary"
-    );
-
-    summaryPlaceholder.style.display = "none";
-
-    if (result) {
-      console.log("✅ Summary generated successfully");
-
-      // Extract overall status automatically
-      let overallStatus = "Needs Improvement";
-      if (result.toLowerCase().includes("strong hire"))
-        overallStatus = "Strong Hire";
-      else if (result.toLowerCase().includes("good potential"))
-        overallStatus = "Good Potential";
-
-      displayInterviewStatus(overallStatus);
-
-      // 🧩 Clean formatted output with improved readability
-      summaryContent.innerHTML = `
-        <div class="space-y-6 text-gray-200 leading-relaxed">
-          ${result
-            .replace(/(?:\r\n|\r|\n)/g, "<br>")
-            .replace(
-              /<h2>/g,
-              '<h2 class="text-indigo-400 text-xl font-bold mt-6 mb-3 border-b border-white/10 pb-1">'
-            )
-            .replace(
-              /<ul>/g,
-              '<ul class="list-disc pl-5 mt-2 space-y-1 text-gray-300">'
-            )
-            .replace(/<li>/g, '<li class="text-sm">')
-            .replace(/<\/li>/g, "</li>")
-            .replace(/<\/ul>/g, "</ul>")
-          }
-        </div>
-      `;
-    } else {
-      summaryPlaceholder.style.display = "none";
-      summaryContent.innerHTML =
-        "<p>⚠️ Summary generation failed. Please try again.</p>";
-    }
-
-    console.log("✅ Interview ended with detailed report.");
-  } catch (error) {
-    console.error("💥 End Interview Error:", error);
-    summaryPlaceholder.style.display = "none";
-    summaryContent.innerHTML = "<p>⚠️ Error generating summary.</p>";
-  }
-}
 
 
         
@@ -1859,7 +1743,6 @@ function setAIAvatarState(state) {
             updateStatus('status_waiting', 'waiting');
             showScreen('homeScreen');
         });
-        
 
     </script>
 </body>
