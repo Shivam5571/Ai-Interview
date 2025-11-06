@@ -742,28 +742,22 @@ model-viewer {
         }
 
 // --- SPEAK FUNCTION (Replace existing one) ---
-// 🎤 Speak Function (AI voice + mic auto control)
 async function speak(text, onEndCallback, isReminder = false) {
   try {
-    const lang = currentLang === "english" ? "english" : "hinglish";
+    const lang = currentLang === "hi" ? "hi" : "english";
 
-    // 💬 Display AI text on screen (only if not a reminder)
-    if (!isReminder && text && text.trim().length > 0) {
+    // Update question text on UI
+    if (!isReminder && text && text.trim()) {
       aiQuestion.textContent = text.trim();
     }
 
-    // 🧏 Pause mic while AI is speaking (to avoid self-hearing)
-    try {
-      if (recognition && isListening) {
-        recognition.stop();
-        isListening = false;
-        console.log("🎙️ Mic paused during AI speech");
-      }
-    } catch (err) {
-      console.warn("Mic pause error:", err);
+    // 🔊 Stop any currently playing audio
+    if (window.currentAudio) {
+      window.currentAudio.pause();
+      window.currentAudio = null;
     }
 
-    // 🎯 Call ElevenLabs or your backend TTS endpoint
+    // Fetch ElevenLabs TTS audio
     const response = await fetch("/.netlify/functions/speak", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -772,42 +766,45 @@ async function speak(text, onEndCallback, isReminder = false) {
 
     if (!response.ok) throw new Error("Voice fetch failed");
 
-    // 🧠 Convert to playable audio
-    const audioBlob = await response.blob();
-    const audioUrl = URL.createObjectURL(audioBlob);
-    const audio = new Audio(audioUrl);
+    const blob = await response.blob();
+    const audioURL = URL.createObjectURL(blob);
+    const audio = new Audio(audioURL);
 
-    // 🌟 Avatar visual update
+    window.currentAudio = audio; // Store globally
+
+    // Avatar animation
     setAIAvatarState("speaking");
 
-    // 🧩 When AI voice finishes speaking...
+// 🧏 Pause recognition while AI speaks
+try {
+  if (recognition && isListening) {
+    recognition.stop();
+    isListening = false;
+    console.log("🎙️ Mic paused during AI speech");
+  }
+} catch (e) {}
+
+
+    // Handle end
     audio.onended = () => {
       setAIAvatarState("listening");
-
-      // 🎤 Restart mic automatically (for user reply)
-      try {
-        if (recognition && !isListening && isInterviewActive) {
-          recognition.start();
-          isListening = true;
-          console.log("🎤 Mic restarted for user response");
-        }
-      } catch (e) {
-        console.warn("Mic restart error:", e);
-      }
-
-      // 🪄 Run callback (for next step)
-      if (onEndCallback) onEndCallback();
+      if (window.currentAudio === audio) window.currentAudio = null;
+      if (typeof onEndCallback === "function") onEndCallback();
     };
 
-    // 🔊 Play AI speech
-    await audio.play();
+    audio.onerror = (e) => {
+      console.error("Audio playback error:", e);
+      setAIAvatarState("listening");
+      if (window.currentAudio === audio) window.currentAudio = null;
+      if (typeof onEndCallback === "function") onEndCallback();
+    };
 
-  } catch (err) {
-    console.error("Voice playback error:", err);
-    setAIAvatarState("thinking");
+    await audio.play();
+  } catch (error) {
+    console.error("Voice playback error:", error);
+    setAIAvatarState("listening");
   }
 }
-
 
 
 
