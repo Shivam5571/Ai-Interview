@@ -252,18 +252,6 @@
 model-viewer {
   transition: all 0.4s ease;
 }
-
-/* 🔧 Smooth camera + zoom transition */
-model-viewer {
-  transition: all 0.6s ease-in-out;
-  transform: translateY(120px);
-}
-
-/* 🔧 When swapped (AI small bubble) → zoom out + thoda adjust */
-.swapped #aiVideoContainer model-viewer {
-  transform: translateY(60px) scale(1.1);
-}
-
     </style>
 </head>
 <body class="flex flex-col h-screen">
@@ -441,24 +429,24 @@ model-viewer {
                                 <!-- AI Agent Video -->
                                 <!-- AI HR Model (Alak Sharma) -->
 <div id="aiVideoContainer" class="w-full h-full object-cover rounded-xl bg-[#0b0c1a] flex items-center justify-center">
-<model-viewer
-  id="aiModel"
-  src="./assets/model/coach_alak2.glb"
-  disable-zoom
+    <div id="interviewerContainer" class="interviewer big"></div>
+<model-viewer 
+    src="./assets/model/coach_alak2.glb"
+disable-zoom
   disable-pan
   disable-tap
   shadow-intensity="1"
   camera-orbit="0deg 85deg 8m"
   camera-target="0m 85m 0m"
   field-of-view="30deg"
-  style="
-    width: 100%;
-    height: 100vh;
+    style="
+    width: 100%; 
+    height: 100vh; 
     background: url('./assets/model/office.jpg') center/cover no-repeat;
     pointer-events: none;
+    transform: translateY(120px);
   ">
-</model-viewer>
-
+  </model-viewer>
 
 
    <!-- 🪑 Transparent Table Overlay -->
@@ -1220,20 +1208,8 @@ function setAIAvatarState(state) {
         }
         
         function swapVideoFeeds() {
-  videoFeedContainer.classList.toggle('swapped');
-  const aiModel = document.getElementById("aiModel");
-
-  if (videoFeedContainer.classList.contains('swapped')) {
-    // 👇 User fullscreen, AI bubble → zoom out
-    aiModel.setAttribute('camera-orbit', '0deg 15deg 8m');
-    aiModel.setAttribute('camera-target', '0m 15m 0m');
-  } else {
-    // 👇 AI fullscreen → normal zoom
-    aiModel.setAttribute('camera-orbit', '0deg 85deg 8m');
-    aiModel.setAttribute('camera-target', '0m 85m 0m');
-  }
-}
-
+            videoFeedContainer.classList.toggle('swapped');
+        }
 
         // --- History & Drawer Functions (LocalStorage) ---
         function getInterviewHistory() {
