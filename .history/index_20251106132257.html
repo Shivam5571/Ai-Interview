@@ -252,26 +252,6 @@
 model-viewer {
   transition: all 0.4s ease;
 }
-.interviewer-small {
-  position: absolute;
-  bottom: 20px;
-  left: 20px;
-  width: 150px;
-  height: 150px;
-  border-radius: 50%;
-  overflow: hidden;
-  background: #000;
-  border: 3px solid rgba(255,255,255,0.3);
-  box-shadow: 0 0 20px rgba(0,0,0,0.3);
-}
-
-.interviewer-small model-viewer {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  transform: scale(1.5) translateY(30px);
-}
-
 
 
     </style>
@@ -451,7 +431,7 @@ model-viewer {
                                 <!-- AI Agent Video -->
                                 <!-- AI HR Model (Alak Sharma) -->
 <div id="aiVideoContainer" class="w-full h-full object-cover rounded-xl bg-[#0b0c1a] flex items-center justify-center">
-    <div class="interviewer-small">
+    <div class="interviewer-small"></div>
 <model-viewer 
     src="./assets/model/coach_alak2.glb"
 disable-zoom
@@ -469,7 +449,6 @@ disable-zoom
     transform: translateY(120px);
   ">
   </model-viewer>
-</div>
 
    <!-- 🪑 Transparent Table Overlay -->
   <img src="./assets/model/table11.png" 
