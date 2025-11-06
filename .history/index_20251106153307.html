@@ -1173,13 +1173,7 @@ Begin with your greeting, ask the candidate’s name, and continue naturally as 
 
         
 async function endInterview() {
-    // 🛑 Stop any AI speech immediately
-if (currentAIAudio) {
-  currentAIAudio.pause();
-  currentAIAudio = null;
-}
-window.speechSynthesis.cancel();
-
+    
   try {
     console.log("🛑 Ending interview initiated...");
     
@@ -1282,10 +1276,6 @@ window.speechSynthesis.cancel();
   } catch (error) {
     console.error("💥 Unexpected End Interview Error:", error);
   }
-  speak("Ending interview. Thank you for participating. You may start a new session anytime.", () => {
-  showScreen("summaryScreen");
-});
-
 }
 
         
