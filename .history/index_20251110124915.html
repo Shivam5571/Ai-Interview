@@ -1751,11 +1751,7 @@ if (window.netlifyIdentity) {
 
 
         // --- Event Listeners & Init ---
-        languageSelector.addEventListener('change', (e) => {
-  currentLang = e.target.value;
-  console.log(`🎙️ Interview voice language set to: ${currentLang}`);
-});
-
+        languageSelector.addEventListener('change', (e) => setLanguage(e.target.value));
         
         startInterviewHomeBtn.addEventListener('click', () => {
             const user = netlifyIdentity.currentUser();

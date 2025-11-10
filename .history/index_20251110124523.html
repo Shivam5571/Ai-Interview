@@ -927,14 +927,11 @@ function handleNoResponse() {
   updateStatus('status_listening', 'listening');
 }
 
-function startNoResponseTimer() {
-  clearTimeout(noResponseTimeout);
-  // ✅ Only sets a silent timer — doesn’t call speak() or endInterview()
-  noResponseTimeout = setTimeout(() => {
-    if (isInterviewActive) handleNoResponse();
-  }, 15000);
-}
 
+        function startNoResponseTimer() {
+            clearTimeout(noResponseTimeout);
+            noResponseTimeout = setTimeout(handleNoResponse, 15000); // 10 seconds
+        }
 
         // === AI INTERVIEW MAIN LOGIC ===
 async function handleInterviewTurn(userAnswer = null) {
@@ -1098,8 +1095,7 @@ async function startInterview() {
     const jobTitle = jobTitleInput.value.trim();
     const jobDescription = jobDescriptionInput.value.trim();
     const difficulty = difficultyInput.value;
-   const lang = currentLang === "hi" ? "hinglish" : "english";
-
+    const languageName = currentLang === 'hi' ? 'Hinglish (a mix of Hindi and English)' : 'English';
 
     // 🔹 Include resume if uploaded
     const resumeInfo = resumeText ? `Here is the candidate's resume content:\n${resumeText}\n\n` : "";
@@ -1751,11 +1747,7 @@ if (window.netlifyIdentity) {
 
 
         // --- Event Listeners & Init ---
-        languageSelector.addEventListener('change', (e) => {
-  currentLang = e.target.value;
-  console.log(`🎙️ Interview voice language set to: ${currentLang}`);
-});
-
+        languageSelector.addEventListener('change', (e) => setLanguage(e.target.value));
         
         startInterviewHomeBtn.addEventListener('click', () => {
             const user = netlifyIdentity.currentUser();
