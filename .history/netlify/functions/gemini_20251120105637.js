@@ -13,7 +13,7 @@ exports.handler = async function (event, context) {
   }
 
   // 🔐  👇 YAHAN APNI REAL GEMINI API KEY LIKH DO
-  const apiKey = "AIzaSyDoOuloCpHyUhVAI233M56CWUjNYmOzzOQ";  // <-- CHANGE THIS
+  const apiKey = "YOUR_REAL_GEMINI_API_KEY_HERE";  // <-- CHANGE THIS
 
   if (!apiKey) {
     return {

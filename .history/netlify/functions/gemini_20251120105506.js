@@ -1,9 +1,12 @@
 // File: netlify/functions/gemini.js
 
-// const fetch = require("node-fetch"); // Uncomment only if Netlify log says: fetch is not defined
+// Agar tumhara Netlify runtime Node 18+ hai to fetch already available hoga.
+// Agar "fetch is not defined" error aaye, to ye line uncomment karo aur
+// project me `npm install node-fetch` kara do.
+// const fetch = require("node-fetch");
 
 exports.handler = async function (event, context) {
-  // Sirf POST allow
+  // Sirf POST allow karein
   if (event.httpMethod && event.httpMethod !== "POST") {
     return {
       statusCode: 405,
@@ -12,39 +15,35 @@ exports.handler = async function (event, context) {
     };
   }
 
-  // 🔐  👇 YAHAN APNI REAL GEMINI API KEY LIKH DO
-  const apiKey = "AIzaSyDoOuloCpHyUhVAI233M56CWUjNYmOzzOQ";  // <-- CHANGE THIS
-
-  if (!apiKey) {
-    return {
-      statusCode: 500,
-      body: JSON.stringify({ error: "API key missing in function code!" }),
-    };
-  }
-
   const GEMINI_MODEL = "gemini-2.5-flash";
 
-  // Request body parse
+  // Body se prompt / history lo (jaisa tum bhejna chaho)
   let bodyJson;
   try {
     bodyJson = JSON.parse(event.body || "{}");
   } catch (err) {
+    console.error("Invalid JSON:", err);
     return {
       statusCode: 400,
-      body: JSON.stringify({ error: "Invalid JSON sent." }),
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ error: "Invalid JSON body." }),
     };
   }
 
+  // Tum choose kar sakte ho:
+  // 1) `prompt` string bhejna
+  // 2) Ya pura `contents` array bhejna (Gemini format me)
   const { prompt, contents } = bodyJson;
 
-  // Agar prompt nahi mile aur contents bhi nahi mile to error
+  // Agar contents diya hai to wahi use karo, warna prompt se contents bana lo
   let finalContents = contents;
   if (!finalContents) {
     if (!prompt) {
       return {
         statusCode: 400,
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          error: "Either send `prompt` or `contents`.",
+          error: "Either `prompt` (string) or `contents` (Gemini format) required.",
         }),
       };
     }
@@ -56,7 +55,18 @@ exports.handler = async function (event, context) {
     ];
   }
 
-  // Gemini REST API Endpoint
+  // API key env se lo
+  const apiKey = process.env.GEMINI_API_KEY;
+  if (!apiKey) {
+    return {
+      statusCode: 500,
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        error: "GEMINI_API_KEY environment variable not set in Netlify.",
+      }),
+    };
+  }
+
   const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent?key=${apiKey}`;
 
   try {
@@ -72,22 +82,28 @@ exports.handler = async function (event, context) {
       }),
     });
 
-    const text = await response.text();
-
     if (!response.ok) {
+      const errorText = await response.text();
+      console.error("Gemini API error:", response.status, errorText);
       return {
         statusCode: response.status,
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ error: text }),
+        body: JSON.stringify({
+          error: "Gemini API request failed.",
+          status: response.status,
+          details: errorText,
+        }),
       };
     }
 
+    const result = await response.json();
     return {
       statusCode: 200,
       headers: { "Content-Type": "application/json" },
-      body: text,
+      body: JSON.stringify(result),
     };
   } catch (err) {
+    console.error("Error calling Gemini API:", err);
     return {
       statusCode: 500,
       headers: { "Content-Type": "application/json" },
