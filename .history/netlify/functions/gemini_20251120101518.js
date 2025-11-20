@@ -14,7 +14,7 @@ exports.handler = async function (event, context) {
   const apiKey = process.env.GEMINI_API_KEY;
   // const apiKey = "APNI_NAYI_GEMINI_API_KEY_YAHAN_DAALEN"; // <-- TEMP hardcode option
 
-  if (!apiKey || apiKey === "AIzaSyDoOuloCpHyUhVAI233M56CWUjNYmOzzOQ") {
+  if (!apiKey || apiKey === "APNI_NAYI_GEMINI_API_KEY_YAHAN_DAALEN") {
     return {
       statusCode: 500,
       body: JSON.stringify({ error: "API key is not set or placeholder is used. Please set the GEMINI_API_KEY environment variable in Netlify." }),
